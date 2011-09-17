@@ -1,0 +1,3 @@
+[submodule "depths"]
+	path = depths
+	url = git@github.com:johnfn/depths.git
