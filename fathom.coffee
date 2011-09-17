@@ -36,6 +36,6 @@ class Entity
     @events[event](args)
     this
 
-exports = module && module.exports || this
+exports = (if typeof module !== 'undefined' && module.exports then module.exports else this)
 exports.Game = Game
 exports.Entity

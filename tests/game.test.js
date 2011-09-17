@@ -2,7 +2,7 @@
   var assert, fathom, should;
   assert = require("assert");
   should = require("should");
-  fathom = require("../index.js");
+  fathom = require("../fathom.js");
   module.exports = {
     'test Game': function() {
       var game;
