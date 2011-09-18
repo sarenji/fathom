@@ -23,6 +23,8 @@ class Entities
     @entities = []
     @entityInfo = []
   
+  # Adds an entity based on its groups. TODO: Will not update where an entity
+  # can be found if its groups change. I'm not sure if it should or not.
   add : (entity) ->
     if entity.__fathom?
       console.log "We found a __fathom property on the entity you passed in."
@@ -117,6 +119,25 @@ class Entity
     if event of @events
       hook.apply(this, args) for hook in @events[event]
     this
+
+  # Returns an array of the groups this Entity is a member of. Must be
+  # implemented in a subclass.
+  groups : () ->
+    throw "NotImplementedException"
+
+  # Renders the Entity. Must be implemented in a subclass.
+  render : (context) ->
+    throw "NotImplementedException"
+
+  # Updates the Entity. Must be implemented in a subclass.
+  update : (entities) ->
+    throw "NotImplementedException"
+
+  # Returns the depth at which the Entity will be rendered (like Z-Ordering).
+  # Can be reimplemented in a subclass.
+  depth : () ->
+    0
+
 
 class StaticImage extends Entity
   constructor : (source, destination) ->
