@@ -68,6 +68,24 @@ class Entities
     
     result[0]
 
+  # I feel like the following methods should be moved outside of Entities,
+  # perhaps into a specialized base class.
+
+  render : (context) ->
+    entities = @get ["renderable"]
+    entities.sort (a, b) -> a.depth() - b.depth()
+
+    for entity in entities
+      entity.emit "pre-render"
+      entity.render context
+      entity.emit "post-render"
+
+  update : (entities) ->
+    for entity in @get ["updateable"]
+      entity.emit "pre-update"
+      entity.update entities
+      entity.emit "post-update"
+
 class Game
   @currentState = null
   @switchState = (state) ->
@@ -125,11 +143,13 @@ class Entity
   groups : () ->
     throw "NotImplementedException"
 
-  # Renders the Entity. Must be implemented in a subclass.
+  # Renders the Entity. Must be implemented in a subclass if it has group
+  # "renderable".
   render : (context) ->
     throw "NotImplementedException"
 
-  # Updates the Entity. Must be implemented in a subclass.
+  # Updates the Entity. Must be implemented in a subclass if it has group
+  # "updateable".
   update : (entities) ->
     throw "NotImplementedException"
 
