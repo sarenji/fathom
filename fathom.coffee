@@ -129,13 +129,12 @@ class Entity
       delete @events[event]
     this
 
-  # Triggers an `event` attached to this Entity and passes the remaining
-  # arguments to the callbacks. If the Entity does not have the event, the
-  # function fails silently.
+  # Triggers an `event` attached to this Entity. If the Entity does
+  # not have the event, the function fails silently.
   # Returns the Entity object for easy chainability.
   emit : (event, args...) ->
     if event of @events
-      hook.apply(this, args) for hook in @events[event]
+      hook.call(this) for hook in @events[event]
     this
 
   # Returns an array of the groups this Entity is a member of. Must be
