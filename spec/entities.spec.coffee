@@ -5,8 +5,8 @@ describe 'Entities', ->
   it 'can add and remove an existing entity', ->
     group = new Fathom.Entities
 
-    test_ent = "entity" : "yep"
-    group.add test_ent, ["stuffs"]
+    test_ent = "entity" : "yep", groups : -> ["stuffs"]
+    group.add test_ent
 
     expect(test_ent.__fathom).toBeDefined()
 
