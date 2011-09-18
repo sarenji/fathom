@@ -49,7 +49,7 @@ class Entities
     for group in groups
       for entity in results
         if group in entity.__fathom.groups
-          pass.push group
+          pass.push entity
       results = pass
 
     results
@@ -58,7 +58,7 @@ class Entities
 
   removeEntity : (entity) ->
     uid = entity.__fathom.uid
-    @entities = e for e in @entities when not e.__fathom.uid == uid
+    @entities = (e for e in @entities when not e.__fathom.uid == uid)
 
   getEntity : (groups) ->
     result = @get groups
