@@ -114,7 +114,8 @@ class Entity
   # function fails silently.
   # Returns the Entity object for easy chainability.
   emit : (event, args...) ->
-    @events[event].apply(this, args)
+    if event of @events
+      hook.apply(this, args) for hook in @events[event]
     this
 
 class StaticImage extends Entity
@@ -123,7 +124,7 @@ class StaticImage extends Entity
     #TODO: Grab from file, use source etc
 
 exports = (if typeof(module) isnt 'undefined' and module.exports then module.exports else this)
-exports.Fathom = {}
-exports.Fathom.Game = Game
-exports.Fathom.Entity = Entity
-exports.Fathom.Entities = Entities
+exports.Fathom =
+  Game     : Game
+  Entity   : Entity
+  Entities : Entities

@@ -1,10 +1,11 @@
 assert = require "assert"
 should = require "should"
 fathom = require "../fathom.js"
+Fathom = fathom.Fathom
 
 module.exports =
   'test Entities' : ->
-    group = new fathom.Entities
+    group = new Fathom.Entities
 
     test_ent = "entity" : "yep"
     group.add test_ent, ["stuffs"]
