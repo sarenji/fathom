@@ -42,19 +42,37 @@ class Entities
 
     @entities.push entity
 
-  get: (groups) ->
-    assert -> (typeof groups == "object")
+  # Get all Entities that match each of an array of criteria.
+  # * If you pass in a string, all returned objects will have that string in its
+  # groups.
+  # * If you pass in a function f, for all returned objects, f(any object) ==
+  # true.
+  # * If you pass in anything else, an error will be raised.
+  
+  get: (criteria) ->
+    assert -> typeof criteria == "object"
      
-    results = @entities
-    pass = []
+    remainingEntities = @entities
 
-    for group in groups
-      for entity in results
-        if group in entity.__fathom.groups
-          pass.push entity
-      results = pass
+    for item in criteria
+      pass = []
 
-    results
+      for entity in remainingEntities
+        switch typeof item
+          when "string"
+            if item in entity.__fathom.groups
+              pass.push entity
+          when "function"
+            if item entity
+              pass.push entity
+          else
+            throw "UnsupportedCriteriaType #{typeof item}"
+
+      remainingEntities = pass
+
+    remainingEntities
+
+
 
   removeEntities : (groups) ->
 
