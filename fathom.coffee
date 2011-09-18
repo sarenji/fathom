@@ -1,5 +1,12 @@
+#TODO: rename Keys to Key
+
 class Keys
-  getCode : (e) ->
+  @A = 65
+  @D = 68
+  @W = 87
+  @S = 83
+
+  @getCode : (e) ->
     if not e
       e = window.event
 
@@ -10,23 +17,28 @@ class Keys
 
     code
 
-  constructor : ->
+  @start : ->
     @keysDown = {}
+    @flush()
 
-    document.onkeyup = (e) ->
-      keysDown[getCode e] = true
+    document.onkeydown = (e) =>
+      console.log @getCode e
+      @keysDown[@getCode e] = true
 
-  isDown : (key) ->
-    keysDown[key]
+    document.onkeyup = (e) =>
+      @keysDown[@getCode e] = false
 
-  isUp : (key) ->
-    if keysDown[key]
-      keysDown[key] = false
+  @isDown : (key) ->
+    @keysDown[key]
+
+  @isUp : (key) ->
+    if @keysDown[key]
+      @keysDown[key] = false
       true
     else
       false
 
-  flush : ->
+  @flush : ->
     @keysDown = {}
 
 assert = (fn) ->
