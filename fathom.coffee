@@ -72,7 +72,12 @@ class Entities
 
     remainingEntities
 
+  # Returns true if there is at least 1 object that matches each criteria,
+  # false otherwise.
+  any: (criteria) ->
+    assert -> typeof criteria == "object"
 
+    return (@get criteria).length > 0
 
   removeEntities : (groups) ->
 
