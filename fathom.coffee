@@ -1,3 +1,34 @@
+class Keys
+  getCode : (e) ->
+    if not e
+      e = window.event
+
+    if e.keyCode
+      code = e.keyCode
+    else if e.which
+      code = e.which
+
+    code
+
+  constructor : ->
+    @keysDown = {}
+
+    document.onkeyup = (e) ->
+      keysDown[getCode e] = true
+
+  isDown : (key) ->
+    keysDown[key]
+
+  isUp : (key) ->
+    if keysDown[key]
+      keysDown[key] = false
+      true
+    else
+      false
+
+  flush : ->
+    @keysDown = {}
+
 assert = (fn) ->
   if not fn()
     throw "AssertionError"
@@ -49,7 +80,7 @@ class Entities
   # true.
   # * If you pass in anything else, an error will be raised.
   
-  get: (criteria) ->
+  get : (criteria) ->
     assert -> typeof criteria == "object"
      
     remainingEntities = @entities
@@ -74,7 +105,7 @@ class Entities
 
   # Returns true if there is at least 1 object that matches each criteria,
   # false otherwise.
-  any: (criteria) ->
+  any : (criteria) ->
     assert -> typeof criteria == "object"
 
     return (@get criteria).length > 0
@@ -203,6 +234,7 @@ ready = (callback) ->
 exports = (module?.exports or this)
 exports.Fathom =
   Game     : Game
+  Keys     : Keys
   Entity   : Entity
   Entities : Entities
   ready    : ready
