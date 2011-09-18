@@ -1,3 +1,7 @@
+assert = (fn) ->
+  if not fn()
+    throw "AssertionError"
+
 map = (array, callback) ->
   callback(item) for item in array
 
