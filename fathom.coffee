@@ -161,10 +161,7 @@ class State extends Entities
 # and a callback. These callbacks are called by the `.emit` method,
 # which takes an event name.
 class Entity
-  constructor : (x = 0, y = 0, size = 20) ->
-    @x = x
-    @y = y
-    @size = size
+  constructor : (@x = 0, @y = 0, @size = 20) ->
     @__fathom =
       uid    : getUniqueID()
       events : {}
