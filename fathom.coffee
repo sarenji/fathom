@@ -40,6 +40,18 @@ class Keys
 
   @flush : ->
     @keysDown = {}
+    @keysDown[x] = false for x in [0..255]
+
+class BasicControls
+  @RPGLike : (speed) =>
+    @vx += (Keys.isDown(Keys.D) - Keys.isDown(Keys.A)) * 2
+    @vy += (Keys.isDown(Keys.S) - Keys.isDown(Keys.W)) * 2
+
+    console.log @vx, @vy
+
+  @PlatformerLike : (speed) ->
+    @vx += (Keys.isDown(Keys.D) - Keys.isDown(Keys.A)) * 2
+    @vy += 2
 
 assert = (fn) ->
   if not fn()
@@ -211,7 +223,6 @@ class Entity
   depth : () ->
     0
 
-
 class StaticImage extends Entity
   constructor : (source, destination) ->
     super destination.x, destination.y, destination.size
@@ -222,11 +233,28 @@ class StaticImage extends Entity
 ready = (callback) ->
   if document.body then callback() else setTimeout (-> ready callback), 250
 
+#This implementation is not complete.
+fixedInterval = (fn, fps) ->
+  setInterval fn, 1000/fps
+
+initialize = (gameLoop) ->
+  ready () ->
+    Keys.start()
+
+    canv = document.createElement "canvas"
+    canv.width = canv.height = 500 #TODO: 500
+    document.body.appendChild(canv)
+
+    context = canv.getContext('2d')
+
+    fixedInterval (() -> (gameLoop context)), 20
+
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
 exports.Fathom =
-  Game     : Game
-  Keys     : Keys
-  Entity   : Entity
-  Entities : Entities
-  ready    : ready
+  Game          : Game
+  Keys          : Keys
+  Entity        : Entity
+  Entities      : Entities
+  BasicControls : BasicControls
+  initialize    : initialize
