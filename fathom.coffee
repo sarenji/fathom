@@ -23,7 +23,7 @@ class Entities
     @entities = []
     @entityInfo = []
   
-  add : (entity, groups) ->
+  add : (entity) ->
     if entity.__fathom?
       console.log "We found a __fathom property on the entity you passed in."
       console.log "This means that either you're using this property, or you"
@@ -35,7 +35,7 @@ class Entities
     # __fathom is a special variable on all entities that stores Fathom-related
     # information about the object
     entity.__fathom =
-      "groups" : groups
+      "groups" : entity.groups()
       "uid" : getUniqueID()
 
     @entities.push entity
