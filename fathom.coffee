@@ -141,7 +141,15 @@ class Entities
 class Game
   @currentState = null
   @switchState = (state) ->
+    @currentState.emit "switch off" if @currentState?
     @currentState = state
+    @currentState.emit "switch on"
+
+# State is just a convenience class that Game uses. It subclasses from
+# Entities and may have extra methods or instance variables added to it in
+# the future. It's advised to use this for managing game state over a regular
+# Entities object, as things may change in the future.
+class State extends Entities
 
 # Entity
 # ------
