@@ -1,0 +1,12 @@
+{
+  "name"          : "fathom",
+  "version"       : "0.0.1",
+  "description"   : "Fast, sexy JS/CoffeeScript game engine",
+  "dependencies"  : {
+    "coffee-script" : ">=1.1.2",
+    "jasmine-node"  : ">=1.0.9"
+  },
+  "scripts" : {
+    "test" : "jasmine-node --coffee spec"
+  }
+}
