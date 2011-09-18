@@ -9,3 +9,7 @@ Fathom comes with the example game Depths, which is intended to demonstrate how 
 `git submodule update`
 
 Then open `depths/index.html` in your favorite web browser. Bam! Game.
+
+## Tests
+
+Run tests via `cake test`.
