@@ -1,6 +1,4 @@
-#TODO: rename Keys to Key
-
-class Keys
+class Key
   @A = 65
   @D = 68
   @W = 87
@@ -44,13 +42,13 @@ class Keys
 
 class BasicControls
   @RPGLike : (speed) =>
-    @vx += (Keys.isDown(Keys.D) - Keys.isDown(Keys.A)) * 2
-    @vy += (Keys.isDown(Keys.S) - Keys.isDown(Keys.W)) * 2
+    @vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * 2
+    @vy += (Key.isDown(Key.S) - Key.isDown(Key.W)) * 2
 
     console.log @vx, @vy
 
   @PlatformerLike : (speed) ->
-    @vx += (Keys.isDown(Keys.D) - Keys.isDown(Keys.A)) * 2
+    @vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * 2
     @vy += 2
 
 assert = (fn) ->
@@ -68,8 +66,7 @@ class Entities
     @entities = []
     @entityInfo = []
   
-  # Adds an entity based on its groups. TODO: Will not update where an entity
-  # can be found if its groups change. I'm not sure if it should or not.
+  # Adds an entity.
   add : (entity) ->
     @entities.push entity
 
@@ -92,7 +89,7 @@ class Entities
       for entity in remainingEntities
         switch typeof item
           when "string"
-            if item in entity.__fathom.groups
+            if item in entity.groups()
               pass.push entity
           when "function"
             if item entity
@@ -161,7 +158,6 @@ class Entity
     @y = y
     @size = size
     @__fathom =
-      groups : @groups()
       uid    : getUniqueID()
       events : {}
 
@@ -206,7 +202,7 @@ class Entity
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
   groups : () ->
-    []
+    throw "NotImplementedException"
 
   # Renders the Entity. Must be implemented in a subclass if it has group
   # "renderable".
@@ -239,7 +235,7 @@ fixedInterval = (fn, fps) ->
 
 initialize = (gameLoop) ->
   ready () ->
-    Keys.start()
+    Key.start()
 
     canv = document.createElement "canvas"
     canv.width = canv.height = 500 #TODO: 500
@@ -253,7 +249,7 @@ initialize = (gameLoop) ->
 exports = (module?.exports or this)
 exports.Fathom =
   Game          : Game
-  Keys          : Keys
+  Key           : Key
   Entity        : Entity
   Entities      : Entities
   BasicControls : BasicControls
