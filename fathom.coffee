@@ -110,6 +110,13 @@ class Entity
     @events = {}
     this
 
+  # Returns true if the current entity touches entity `other`.
+  touchingEntity : (other) ->
+    not ((other.x          ) > (@x + @size) or
+         (other.x + other.size) < (@x        ) or
+         (other.y             ) > (@y + @size) or
+         (other.y + other.size) < (@y       ))
+
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
   # Returns the Entity object for easy chainability.
