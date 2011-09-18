@@ -78,12 +78,12 @@
     Entity.prototype.emit = function() {
       var args, event;
       event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      this.events[event](args);
+      this.events[event].apply(this, args);
       return this;
     };
     return Entity;
   })();
-  exports = module && module.exports || this;
+  exports = (module !== 'undefined' && module.exports ? module.exports : this);
   exports.Game = Game;
   exports.Entity;
 }).call(this);
