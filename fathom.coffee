@@ -71,6 +71,17 @@ class Game
   @switchState = (state) ->
     @currentState = state
 
+'''
+Entity
+------
+
+Encapsulates all the render and update logic independent
+to one Entity.
+
+All entities have an `.on` method, which takes an event name
+and a callback. These events are callable by the `.emit` method,
+which takes an event name.
+'''
 class Entity
   constructor : (x = 0, y = 0, size = 20) ->
     @x = x
@@ -79,18 +90,29 @@ class Entity
     @events = {}
     this
 
+  # Adds a `callback` function to a string `event`.
+  # Callbacks are stackable, and are called in order of addition.
+  # Returns the Entity object for easy chainability.
   on : (event, callback) ->
     @events[event] = @events[event] || []
     @events[event].push(callback)
     this
-    
-  off : (event, callback) ->
+  
+  # If a `callback` is provided, removes the callback from an event.
+  # Fails silently if no callback was found. If no `callback` is
+  # provided, all callbacks attached to an event are removed.
+  # Returns the Entity object for easy chainability.
+  off : (event, callback = null) ->
     if callback
       @events[event] = filter(@events[event], (x) -> x is callback)
     else if event
       delete @events[event]
     this
 
+  # Triggers an `event` attached to this Entity and passes the remaining
+  # arguments to the callbacks. If the Entity does not have the event, the
+  # function fails silently.
+  # Returns the Entity object for easy chainability.
   emit : (event, args...) ->
     @events[event].apply(this, args)
     this
