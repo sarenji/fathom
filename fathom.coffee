@@ -163,8 +163,15 @@ class StaticImage extends Entity
     super destination.x, destination.y, destination.size
     #TODO: Grab from file, use source etc
 
-exports = (if typeof(module) isnt 'undefined' and module.exports then module.exports else this)
+# A weak approximation of onReady from jQuery. All we care about to start up
+# Fathom is that document.body exists, which may not immediately be true.
+ready = (callback) ->
+  if document.body then callback() else setTimeout (-> ready callback), 250
+
+# Export necessary things outside of closure.
+exports = (module?.exports or this)
 exports.Fathom =
   Game     : Game
   Entity   : Entity
   Entities : Entities
+  ready    : ready
