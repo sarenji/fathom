@@ -6,7 +6,7 @@ map = (array, callback) ->
   callback(item) for item in array
 
 filter = (array, callback) ->
-  [ item for item in array if callback(item) ]
+  item for item in array if callback(item)
 
 reduce = (array, callback, init = null) ->
   final = init || array.shift()
@@ -72,9 +72,10 @@ class Game
     @currentState = state
 
 class Entity
-  constructor : (x = 0, y = 0) ->
+  constructor : (x = 0, y = 0, size = 20) ->
     @x = x
     @y = y
+    @size = size
     @events = {}
     this
 
@@ -94,7 +95,13 @@ class Entity
     @events[event].apply(this, args)
     this
 
+class StaticImage extends Entity
+  constructor : (source, destination) ->
+    super destination.x, destination.y, destination.size
+    #TODO: Grab from file, use source etc
+
 exports = (if typeof(module) isnt 'undefined' and module.exports then module.exports else this)
-exports.Game = Game
-exports.Entity
-exports.Entities = Entities
+exports.Fathom = {}
+exports.Fathom.Game = Game
+exports.Fathom.Entity = Entity
+exports.Fathom.Entities = Entities
