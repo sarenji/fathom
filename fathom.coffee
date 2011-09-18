@@ -94,7 +94,7 @@ class Entity
     @events[event].apply(this, args)
     this
 
-exports = (if module isnt 'undefined' and module.exports then module.exports else this)
+exports = (if typeof(module) isnt 'undefined' and module.exports then module.exports else this)
 exports.Game = Game
 exports.Entity
 exports.Entities = Entities
