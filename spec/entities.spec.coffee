@@ -5,7 +5,7 @@ describe 'Entities', ->
     group = new Fathom.Entities
 
     entity = new Fathom.Entity
-    entity.__fathom.groups = ["stuffs"]
+    entity.groups = () -> ["stuffs"]
     group.add entity
 
     expect(group.get(["stuffs"]).length).toEqual 1
