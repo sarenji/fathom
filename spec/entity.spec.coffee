@@ -1,5 +1,4 @@
-fathom = require "../fathom.js"
-Fathom = fathom.Fathom
+{Fathom} = require "../fathom.js"
 
 describe 'Entity', ->
   describe '#on', ->
@@ -7,9 +6,9 @@ describe 'Entity', ->
       entity = new Fathom.Entity
       event  = 'some event'
 
-      expect(entity.__events[event]).toBeUndefined()
+      expect(entity.__fathom.events[event]).toBeUndefined()
       entity.on event, -> @david_rules = true
-      expect(entity.__events[event].length).toEqual 1
+      expect(entity.__fathom.events[event].length).toEqual 1
 
     it 'should add callbacks to existing events', ->
       entity = new Fathom.Entity
@@ -17,7 +16,7 @@ describe 'Entity', ->
       entity.on event, -> @david_rules = true
       entity.on event, -> @grant_too = true
 
-      expect(entity.__events[event].length).toEqual 2
+      expect(entity.__fathom.events[event].length).toEqual 2
 
     it 'should not add the same callback to the same event', ->
       entity = new Fathom.Entity
@@ -26,7 +25,7 @@ describe 'Entity', ->
       entity.on event, david
       entity.on event, david
 
-      expect(entity.__events[event].length).toEqual 1
+      expect(entity.__fathom.events[event].length).toEqual 1
 
     it 'can add the same callback to two different events', ->
       entity = new Fathom.Entity
@@ -34,8 +33,8 @@ describe 'Entity', ->
       entity.on 'some event',    -> david
       entity.on 'another event', -> david
 
-      expect(entity.__events['some event'].length).toEqual 1
-      expect(entity.__events['another event'].length).toEqual 1
+      expect(entity.__fathom.events['some event'].length).toEqual 1
+      expect(entity.__fathom.events['another event'].length).toEqual 1
 
   describe '#off', ->
     describe 'when providing a specific callback', ->
@@ -48,12 +47,12 @@ describe 'Entity', ->
 
       it 'should remove the event', ->
         entity.off event, david
-        expect(entity.__events[event].length).toEqual 1
-        expect(entity.__events[event][0]).toBe grant
+        expect(entity.__fathom.events[event].length).toEqual 1
+        expect(entity.__fathom.events[event][0]).toBe grant
 
       it 'should remove empty arrays to save memory', ->
         entity.off event, grant
-        expect(entity.__events[event]).toBeUndefined()
+        expect(entity.__fathom.events[event]).toBeUndefined()
 
     describe 'when only providing the event name', ->
       entity = new Fathom.Entity
@@ -65,7 +64,7 @@ describe 'Entity', ->
 
       it 'should remove all attached callbacks', ->
         entity.off event
-        expect(entity.__events[event]).toBeUndefined()
+        expect(entity.__fathom.events[event]).toBeUndefined()
 
     describe 'on a bogus event', ->
       describe 'when providing a specific callback', ->

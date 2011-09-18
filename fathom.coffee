@@ -47,20 +47,6 @@ class Entities
   # Adds an entity based on its groups. TODO: Will not update where an entity
   # can be found if its groups change. I'm not sure if it should or not.
   add : (entity) ->
-    if entity.__fathom?
-      console.log "We found a __fathom property on the entity you passed in."
-      console.log "This means that either you're using this property, or you"
-      console.log "have two groups with the same object. These are both bad ideas."
-      # But the 2nd one is reasonable. TODO
-
-      throw "OhCrapException" #TODO
-    
-    # __fathom is a special variable on all entities that stores Fathom-related
-    # information about the object
-    entity.__fathom =
-      "groups" : entity.groups()
-      "uid" : getUniqueID()
-
     @entities.push entity
 
   # Get all Entities that match each of an array of criteria.
@@ -135,7 +121,7 @@ class Game
   @switchState = (state) ->
     @currentState = state
 
-'''
+###
 Entity
 ------
 
@@ -143,16 +129,18 @@ Encapsulates all the render and update logic independent
 to one Entity.
 
 All entities have an `.on` method, which takes an event name
-and a callback. These events are callable by the `.emit` method,
+and a callback. These callbacks are called by the `.emit` method,
 which takes an event name.
-'''
+###
 class Entity
   constructor : (x = 0, y = 0, size = 20) ->
     @x = x
     @y = y
     @size = size
-    @__events = {}
-    this
+    @__fathom =
+      groups : @groups()
+      uid    : getUniqueID()
+      events : {}
 
   # Returns true if the current entity touches entity `other`.
   touchingEntity : (other) ->
@@ -165,8 +153,8 @@ class Entity
   # Callbacks are stackable, and are called in order of addition.
   # Returns the Entity object for easy chainability.
   on : (event, callback) ->
-    @__events[event] = @__events[event] || []
-    @__events[event].push(callback) unless callback in @__events[event]
+    @__fathom.events[event] = @__fathom.events[event] || []
+    @__fathom.events[event].push(callback) unless callback in @__fathom.events[event]
     this
   
   # If a `callback` is provided, removes the callback from an event.
@@ -175,24 +163,24 @@ class Entity
   # Returns the Entity object for easy chainability.
   off : (event, callback = null) ->
     if callback
-      @__events[event] = (hook for hook in @__events[event] when hook isnt callback)
-      delete @__events[event] if @__events[event].length == 0
+      @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
+      delete @__fathom.events[event] if @__fathom.events[event].length == 0
     else if event
-      delete @__events[event]
+      delete @__fathom.events[event]
     this
 
   # Triggers an `event` attached to this Entity. If the Entity does
   # not have the event, the function fails silently.
   # Returns the Entity object for easy chainability.
   emit : (event, args...) ->
-    if event of @__events
-      hook.call(this) for hook in @__events[event]
+    if event of @__fathom.events
+      hook.call(this) for hook in @__fathom.events[event]
     this
 
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
   groups : () ->
-    throw "NotImplementedException"
+    []
 
   # Renders the Entity. Must be implemented in a subclass if it has group
   # "renderable".
