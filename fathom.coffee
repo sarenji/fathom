@@ -50,6 +50,7 @@ class Entities
     @entities.push entity
 
   # Get all Entities that match each of an array of criteria.
+  #
   # * If you pass in a string, all returned objects will have that string in its
   # groups.
   # * If you pass in a function f, for all returned objects, f(any object) ==
@@ -121,17 +122,15 @@ class Game
   @switchState = (state) ->
     @currentState = state
 
-###
-Entity
-------
-
-Encapsulates all the render and update logic independent
-to one Entity.
-
-All entities have an `.on` method, which takes an event name
-and a callback. These callbacks are called by the `.emit` method,
-which takes an event name.
-###
+# Entity
+# ------
+#
+# Encapsulates all the render and update logic independent
+# to one Entity.
+#
+# All entities have an `.on` method, which takes an event name
+# and a callback. These callbacks are called by the `.emit` method,
+# which takes an event name.
 class Entity
   constructor : (x = 0, y = 0, size = 20) ->
     @x = x
@@ -151,30 +150,33 @@ class Entity
 
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
-  # Returns the Entity object for easy chainability.
   on : (event, callback) ->
-    @__fathom.events[event] = @__fathom.events[event] || []
-    @__fathom.events[event].push(callback) unless callback in @__fathom.events[event]
+    @__fathom.events[event] = chain = @__fathom.events[event] or []
+    chain.push(callback) unless callback in chain
+
+    # Return the Entity object for easy chainability.
     this
   
   # If a `callback` is provided, removes the callback from an event.
   # Fails silently if no callback was found. If no `callback` is
   # provided, all callbacks attached to an event are removed.
-  # Returns the Entity object for easy chainability.
   off : (event, callback = null) ->
     if callback
       @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
       delete @__fathom.events[event] if @__fathom.events[event].length == 0
     else if event
       delete @__fathom.events[event]
+
+    # Return the Entity object for easy chainability.
     this
 
   # Triggers an `event` attached to this Entity. If the Entity does
   # not have the event, the function fails silently.
-  # Returns the Entity object for easy chainability.
   emit : (event, args...) ->
     if event of @__fathom.events
       hook.call(this) for hook in @__fathom.events[event]
+
+    # Return the Entity object for easy chainability.
     this
 
   # Returns an array of the groups this Entity is a member of. Must be
