@@ -33,16 +33,6 @@ assert = (fn) ->
   if not fn()
     throw "AssertionError"
 
-map = (array, callback) ->
-  callback(item) for item in array
-
-filter = (array, callback) ->
-  item for item in array when callback(item)
-
-reduce = (array, callback, init = null) ->
-  final = init || array.shift()
-  final = callback(final, item) for item in array
-
 uniqueID = 0
 
 getUniqueID = () ->
@@ -185,7 +175,7 @@ class Entity
   # Returns the Entity object for easy chainability.
   off : (event, callback = null) ->
     if callback
-      @__events[event] = filter(@__events[event], (x) -> x isnt callback)
+      @__events[event] = (hook for hook in @__events[event] when hook isnt callback)
       delete @__events[event] if @__events[event].length == 0
     else if event
       delete @__events[event]
