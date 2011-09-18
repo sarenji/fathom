@@ -6,7 +6,7 @@ map = (array, callback) ->
   callback(item) for item in array
 
 filter = (array, callback) ->
-  item for item in array if callback(item)
+  item for item in array when callback(item)
 
 reduce = (array, callback, init = null) ->
   final = init || array.shift()
@@ -130,7 +130,7 @@ class Entity
     @x = x
     @y = y
     @size = size
-    @events = {}
+    @__events = {}
     this
 
   # Returns true if the current entity touches entity `other`.
@@ -144,8 +144,8 @@ class Entity
   # Callbacks are stackable, and are called in order of addition.
   # Returns the Entity object for easy chainability.
   on : (event, callback) ->
-    @events[event] = @events[event] || []
-    @events[event].push(callback)
+    @__events[event] = @__events[event] || []
+    @__events[event].push(callback) unless callback in @__events[event]
     this
   
   # If a `callback` is provided, removes the callback from an event.
@@ -154,17 +154,18 @@ class Entity
   # Returns the Entity object for easy chainability.
   off : (event, callback = null) ->
     if callback
-      @events[event] = filter(@events[event], (x) -> x is callback)
+      @__events[event] = filter(@__events[event], (x) -> x isnt callback)
+      delete @__events[event] if @__events[event].length == 0
     else if event
-      delete @events[event]
+      delete @__events[event]
     this
 
   # Triggers an `event` attached to this Entity. If the Entity does
   # not have the event, the function fails silently.
   # Returns the Entity object for easy chainability.
   emit : (event, args...) ->
-    if event of @events
-      hook.call(this) for hook in @events[event]
+    if event of @__events
+      hook.call(this) for hook in @__events[event]
     this
 
   # Returns an array of the groups this Entity is a member of. Must be
