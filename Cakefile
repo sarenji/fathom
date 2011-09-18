@@ -5,3 +5,4 @@ exec = require('child_process').exec;
 task 'test', 'test the library', ->
   exec "jasmine-node --coffee spec", (error, stdout, stderr) ->
     console.log stdout
+    console.log stderr
