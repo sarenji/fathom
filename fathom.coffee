@@ -19,12 +19,12 @@ class Key
 
     code
 
-  @addAlphabet: ->
+  @addKeys : ->
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     @[chr] = alphabet.charCodeAt i for chr, i in alphabet
 
   @start : ->
-    @addAlphabet()
+    @addKeys()
 
     @keysDown = {}
     @flush()
