@@ -121,6 +121,9 @@ class Entities
 
     return (@get criteria).length > 0
 
+  can : (decorator) ->
+    decorator.call(this)
+
   removeEntities : (groups) ->
 
   removeEntity : (entity) ->
