@@ -40,16 +40,29 @@ class Key
     @keysDown = {}
     @keysDown[x] = false for x in [0..255]
 
+
+# BasicControls provides callbacks for simple arrow-based movement. We choose
+# to return callbacks because we get some nice convience with callback-related
+# hooks, especially `pre-update`. See Depths TODO for a good example of this.
+# 
+# BasicControls requires `object` to be of type StandardControllable. But that
+# type doesn't exist right now TODO and it's also a horrible name so I have to
+# rethink this. What it means until it does is that the controlled object must
+# have a vx and a vy.
 class BasicControls
-  @RPGLike : (speed) =>
-    @vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * 2
-    @vy += (Key.isDown(Key.S) - Key.isDown(Key.W)) * 2
+  #TODO: When/if I understand coffeescript better: I should be able to not have
+  #the user pass in object; it'll always be this, so I should just be able to
+  #bind with the fat arrow. But that doesn't seem to work here. Can't figure
+  #out why.
+  @RPGLike : (speed, object) =>
+    () =>
+      object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
+      object.vy += (Key.isDown(Key.S) - Key.isDown(Key.W)) * speed
 
-    console.log @vx, @vy
-
-  @PlatformerLike : (speed) ->
-    @vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * 2
-    @vy += 2
+  @PlatformerLike : (speed, object) =>
+    () =>
+      object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * 2
+      object.vy += 2
 
 assert = (fn) ->
   if not fn()
