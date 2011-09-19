@@ -189,10 +189,14 @@ class Entity
 
   # Returns true if the current entity touches entity `other`.
   touchingEntity : (other) ->
-    not ((other.x          ) > (@x + @size) or
-         (other.x + other.size) < (@x        ) or
-         (other.y             ) > (@y + @size) or
-         (other.y + other.size) < (@y       ))
+    not (other.x              > @x + @size or
+         other.x + other.size < @x         or
+         other.y              > @y + @size or
+         other.y + other.size < @y       )
+
+  # Returns true if this entity contains point `point`.
+  touchingPoint : (point) ->
+    @x <= point.x <= @x + @size and @y <= point.y <= @y + @size
 
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
