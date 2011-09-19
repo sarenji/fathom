@@ -1,3 +1,7 @@
+# TODO
+# I'm not sure if I like the idea of each Entity just having a function to
+# manage its groups. There are positives and negatives here.
+
 class Point
   constructor : (x, y) ->
     @x = x
@@ -46,28 +50,64 @@ class Key
     @keysDown[x] = false for x in [0..255]
 
 
-# BasicControls provides callbacks for simple arrow-based movement. We choose
+# BasicHooks provides callbacks for simple arrow-based movement. We choose
 # to return callbacks because we get some nice convience with callback-related
 # hooks, especially `pre-update`. See Depths TODO for a good example of this.
 # 
-# BasicControls requires `object` to be of type StandardControllable. But that
+# BasicHooks requires `object` to be of type StandardControllable. But that
 # type doesn't exist right now TODO and it's also a horrible name so I have to
 # rethink this. What it means until it does is that the controlled object must
 # have a vx and a vy.
-class BasicControls
+#
+# BasicHooks at the current point in time seems to make too many assumptions
+# about the user. This seems to suggest that either
+#   *) It doesn't belong in Fathom
+#   *) It belongs in a higher level of abstraction than what we're using right now. 
+#
+# I don't think that we can tell our users "this is how you should denote walls
+# when you create inherited Entities," so unless we figure out this problem
+# we're probably going to have to scrap BasicHooks.platformerLike.
+#
+# Another possibility is that jumping in platformerLike needs to be moved out
+# of BasicHooks.platformerLike. But then where does it go? The post-pre-update
+# hook? Yikes.
+class BasicHooks
   #TODO: When/if I understand coffeescript better: I should be able to not have
   #the user pass in object; it'll always be this, so I should just be able to
   #bind with the fat arrow. But that doesn't seem to work here. Can't figure
   #out why.
-  @RPGLike : (speed, object) =>
+
+  # TODO: More customization.
+  # TODO: Nice accelerating controls too, perhaps.
+  @rpgLike : (speed, object) =>
     () =>
       object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
       object.vy += (Key.isDown(Key.S) - Key.isDown(Key.W)) * speed
 
-  @PlatformerLike : (speed, object) =>
+  # TODO: Pass in cutoff and decel.
+  @decel : (object) =>
+    cutoff = .5
+    decel = 2
+
     () =>
-      object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * 2
-      object.vy += 2
+      object.vx = 0 if Math.abs(object.vx) < cutoff
+      object.vy = 0 if Math.abs(object.vy) < cutoff
+
+      object.vx /= decel
+      object.vy /= decel
+
+  # TODO: See massive BasicHooks comment. 
+  @platformerLike : (speed, object, entities) =>
+    object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
+    object.vy += 5
+
+    # Need to check if we're on the ground before we jump
+    if Key.isDown(Key.W)
+      onGround = entities.any ["wall", (other) -> other.touchingPoint(x : object.x, y : object.y + object.size + 5)]
+      console.log onGround
+      if onGround
+        object.vy -= 50
+
 
 assert = (fn) ->
   if not fn()
@@ -278,9 +318,9 @@ initialize = (gameLoop) ->
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
 exports.Fathom =
-  Game          : Game
-  Key           : Key
-  Entity        : Entity
-  Entities      : Entities
-  BasicControls : BasicControls
+  Game       : Game
+  Key        : Key
+  Entity     : Entity
+  Entities   : Entities
+  BasicHooks : BasicHooks
   initialize    : initialize
