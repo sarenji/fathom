@@ -19,12 +19,9 @@ class Key
 
     code
 
-  @addAlphabet: () ->
-    idx = 65
-
-    for chr in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      this[chr] = idx
-      idx++
+  @addAlphabet: ->
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    @[chr] = alphabet.charCodeAt i for chr, i in alphabet
 
   @start : ->
     @addAlphabet()
