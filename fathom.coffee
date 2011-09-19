@@ -234,6 +234,22 @@ class Game
 # Entities object, as things may change in the future.
 class State extends Entities
 
+class Rect
+  constructor: (@x, @y, @size) ->
+    @right = @x + @size
+    @bottom = @y + @size
+
+  # Returns true if the current rect touches rect `other`.
+  touchingRect : (other) ->
+    not (other.x              > @x + @size or
+         other.x + other.size < @x         or
+         other.y              > @y + @size or
+         other.y + other.size < @y       )
+
+  # Returns true if this rect contains point `point`.
+  touchingPoint : (point) ->
+    @x <= point.x <= @x + @size and @y <= point.y <= @y + @size
+
 # Entity
 # ------
 #
@@ -243,22 +259,13 @@ class State extends Entities
 # All entities have an `.on` method, which takes an event name
 # and a callback. These callbacks are called by the `.emit` method,
 # which takes an event name.
-class Entity
-  constructor : (@x = 0, @y = 0, @size = 20) ->
+class Entity extends Rect
+  constructor : (x = 0, y = 0, size = 20) ->
+    super
+
     @__fathom =
       uid    : getUniqueID()
       events : {}
-
-  # Returns true if the current entity touches entity `other`.
-  touchingEntity : (other) ->
-    not (other.x              > @x + @size or
-         other.x + other.size < @x         or
-         other.y              > @y + @size or
-         other.y + other.size < @y       )
-
-  # Returns true if this entity contains point `point`.
-  touchingPoint : (point) ->
-    @x <= point.x <= @x + @size and @y <= point.y <= @y + @size
 
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
