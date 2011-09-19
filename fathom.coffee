@@ -323,15 +323,64 @@ class StaticImage extends Entity
     super destination.x, destination.y, destination.size
     #TODO: Grab from file, use source etc
 
+class Text extends Entity
+  constructor : (@text, x=0, y=0, opts={}) ->
+    super x, y
+    @color    = opts.color    || "#000000"
+    @baseline = opts.baseline || "top"
+    @size     = opts.size     || 16
+    @font     = opts.font     || "#{@size}px Courier New"
+    setup     = =>
+      context.fillStyle    = @color
+      context.font         = @font
+      context.textBaseline = @baseline
+    @on 'pre-update', setup
+    @on 'pre-render', setup
+  groups : -> ["renderable"]
+  render : (context) ->
+    context.fillText @text, @x, @y
+  depth : -> 2
+
+class TextBox extends Text
+  constructor : (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
+    super text, x, y, opts
+
+  groups : -> ["renderable", "updateable"]
+
+  update : (entities) ->
+    # split text into chunks
+    words         = @text.split(' ')
+    phrases       = []
+    currentPhrase = words.shift()
+    oldPhrase     = ""
+
+    # find wrappings
+    for word in words
+      oldPhrase      = currentPhrase
+      currentPhrase += " #{word}"
+      if context.measureText(currentPhrase).width > @width
+        currentPhrase = word
+        phrases.push(oldPhrase)
+        oldPhrase = ""
+    phrases.push(currentPhrase)
+
+    # store wrapped phrases
+    @phrases = phrases
+
+  render : (context) ->
+    for phrase, i in @phrases
+      context.fillText phrase, @x, @y + @size * i
+
 # A weak approximation of onReady from jQuery. All we care about to start up
 # Fathom is that document.body exists, which may not immediately be true.
 ready = (callback) ->
   if document.body then callback() else setTimeout (-> ready callback), 250
 
 #This implementation is not complete.
-fixedInterval = (fn, fps) ->
+fixedInterval = (fn, fps=24) ->
   setInterval fn, 1000/fps
 
+context = null
 initialize = (gameLoop) ->
   ready () ->
     Key.start()
@@ -342,7 +391,7 @@ initialize = (gameLoop) ->
 
     context = canv.getContext('2d')
 
-    fixedInterval (() -> (gameLoop context)), 20
+    fixedInterval (() -> (gameLoop context))
 
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
@@ -352,4 +401,7 @@ exports.Fathom =
   Entity     : Entity
   Entities   : Entities
   BasicHooks : BasicHooks
-  initialize    : initialize
+  Text       : Text
+  TextBox    : TextBox
+  initialize : initialize
+  context    : context
