@@ -1,3 +1,20 @@
+# Type annotation for CoffeeScript/JavaScript.
+
+#TODO: Can probably be moved into some sort of metautil...
+types = (typeList...) ->
+  # Sneak up the stack trace to get args of calling function.
+  args = Array.prototype.slice.call types.caller.arguments
+
+  for arg, i in args
+    if typeof arg != typeList[i]
+      err = "TypeError: got #{typeof arg}, expected #{typeList[i]}"
+
+      console.log err
+      throw err
+      return false
+
+  return true
+
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
 # manage its groups. There are positives and negatives here.
