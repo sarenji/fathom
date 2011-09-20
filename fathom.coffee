@@ -1,19 +1,25 @@
 # Type annotation for CoffeeScript/JavaScript.
+# TODO: Can probably be moved into some sort of metautil...
 
-#TODO: Can probably be moved into some sort of metautil...
+getType = (someObj) ->
+  funcNameRegex = /function (.+)\(/
+  results = (funcNameRegex).exec((someObj).constructor.toString())
+  results[1]
+
 types = (typeList...) ->
   # Sneak up the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments
 
+  throwError = (expected, received) ->
+    err = "TypeError: got #{getType arg}, expected #{typeList[i]}"
+
+    console.log err
+    throw err
+
   for arg, i in args
-    if typeof arg != typeList[i]
-      err = "TypeError: got #{typeof arg}, expected #{typeList[i]}"
+    if (getType arg).toUpperCase() != (typeList[i]).toUpperCase()
+      throwError typeList[i], typeof arg
 
-      console.log err
-      throw err
-      return false
-
-  return true
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
