@@ -37,3 +37,5 @@ Then open `depths/index.html` in your favorite web browser. Bam! Game.
 ## Tests
 
 Run all test suites via `cake test`.
+
+Run tests continuously via `cake autotest`.
