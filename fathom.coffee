@@ -6,6 +6,10 @@ getType = (someObj) ->
   results = (funcNameRegex).exec((someObj).constructor.toString())
   results[1]
 
+assert = (fn) ->
+  if not fn()
+    throw "AssertionError"
+
 ###
 
 Comment this out until I hash it into a better state.
@@ -138,10 +142,6 @@ class BasicHooks
         object.vy -= 50
 
 
-assert = (fn) ->
-  if not fn()
-    throw "AssertionError"
-
 uniqueID = 0
 
 getUniqueID = () ->
@@ -161,8 +161,10 @@ class Entities
   #
   # * If you pass in a string, all returned objects will have that string in its
   # groups.
+  #
   # * If you pass in a function f, for all returned objects, f(any object) ==
   # true.
+  #
   # * If you pass in anything else, an error will be raised.
   
   get : (criteria) ->
@@ -176,7 +178,7 @@ class Entities
       for entity in remainingEntities
         switch typeof item
           when "string"
-            if item in entity.groups()
+            if item in entity.__fathom.groups
               pass.push entity
           when "function"
             if item entity
@@ -228,6 +230,10 @@ class Entities
       entity.update entities
       entity.emit "post-update"
 
+class Group
+  initialize: () ->
+    #...TODO.
+
 class Game
   @currentState = null
   @switchState = (state) ->
@@ -251,7 +257,7 @@ class Rect
     not (other.x              > @x + @size or
          other.x + other.size < @x         or
          other.y              > @y + @size or
-         other.y + other.size < @y       )
+         other.y + other.size < @y)
 
   # Returns true if this rect contains point `point`.
   touchingPoint : (point) ->
@@ -267,12 +273,17 @@ class Rect
 # and a callback. These callbacks are called by the `.emit` method,
 # which takes an event name.
 class Entity extends Rect
-  constructor : (x = 0, y = 0, size = 20) ->
-    super
+  constructor : (x, y, size, groups) ->
+    assert -> typeof groups == "object"
+
+    # TODO:
+    # groups.push("renderable")
+    super(x, y, size)
 
     @__fathom =
       uid    : getUniqueID()
       events : {}
+      groups : groups
 
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
@@ -326,30 +337,32 @@ class Entity extends Rect
     0
 
 class Map extends Entity
-  constructor : (x, y, size, all_entities, tileClass = null) ->
-    @size = size
+  constructor : (tileSize, tileClass) ->
+    @tileSize = tileSize
+    @tileClass = tileClass
 
+  new_map : (width, height, entities) ->
     addTile = (x, y) =>
       type = if y == 8 then 1 else 0
-      tile = new tileClass(x * @size, y * @size, @size, type)
-      all_entities.add tile
+      tile = new @tileClass(x * @tileSize, y * @tileSize, @tileSize, type)
+      entities.add tile
       tile
-    @tiles = ((addTile(a, b) for b in [0...y]) for a in [0...x])
+    @tiles = ((addTile(a, b) for b in [0...height]) for a in [0...width])
 
   render : (context) ->
 
 
 class StaticImage extends Entity
   constructor : (source, destination) ->
+    #TODO groups
     super destination.x, destination.y, destination.size
     #TODO: Grab from file, use source etc
 
 class Text extends Entity
-  constructor : (@text, x=0, y=0, opts={}) ->
-    super x, y
+  constructor : (@text, x=0, y=0, opts={}, groups) ->
+    super x, y, opts.size || 16, groups
     @color    = opts.color    || "#000000"
     @baseline = opts.baseline || "top"
-    @size     = opts.size     || 16
     @font     = opts.font     || "#{@size}px Courier New"
     setup     = =>
       context.fillStyle    = @color
@@ -357,16 +370,15 @@ class Text extends Entity
       context.textBaseline = @baseline
     @on 'pre-update', setup
     @on 'pre-render', setup
-  groups : -> ["renderable"]
   render : (context) ->
     context.fillText @text, @x, @y
   depth : -> 2
 
 class TextBox extends Text
   constructor : (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
-    super text, x, y, opts
+    @phrases = []
 
-  groups : -> ["renderable", "updateable"]
+    super text, x, y, opts, ["renderable", "updateable"]
 
   update : (entities) ->
     # split text into chunks
@@ -403,6 +415,8 @@ fixedInterval = (fn, fps=24) ->
 
 context = null
 initialize = (gameLoop) ->
+  all_entities = new Entities
+
   ready () ->
     Key.start()
 
@@ -412,7 +426,7 @@ initialize = (gameLoop) ->
 
     context = canv.getContext('2d')
 
-    fixedInterval (() -> (gameLoop context))
+    fixedInterval (() -> (gameLoop context, all_entities))
 
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
