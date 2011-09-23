@@ -6,12 +6,16 @@ getType = (someObj) ->
   results = (funcNameRegex).exec((someObj).constructor.toString())
   results[1]
 
+###
+
+Comment this out until I hash it into a better state.
+
 types = (typeList...) ->
   # Sneak up the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments
 
   throwError = (expected, received) ->
-    err = "TypeError: got #{getType arg}, expected #{typeList[i]}"
+    err = "TypeError: got #{getType arg}, expected #{typeList[i]} in #{types.caller}"
 
     console.log err
     throw err
@@ -19,7 +23,8 @@ types = (typeList...) ->
   for arg, i in args
     if (getType arg).toUpperCase() != (typeList[i]).toUpperCase()
       throwError typeList[i], typeof arg
-
+###
+types = ->
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
@@ -320,6 +325,20 @@ class Entity extends Rect
   depth : () ->
     0
 
+class Map extends Entity
+  constructor : (x, y, size, all_entities, tileClass = null) ->
+    @size = size
+
+    addTile = (x, y) =>
+      type = if y == 8 then 1 else 0
+      tile = new tileClass(x * @size, y * @size, @size, type)
+      all_entities.add tile
+      tile
+    @tiles = ((addTile(a, b) for b in [0...y]) for a in [0...x])
+
+  render : (context) ->
+
+
 class StaticImage extends Entity
   constructor : (source, destination) ->
     super destination.x, destination.y, destination.size
@@ -405,5 +424,6 @@ exports.Fathom =
   BasicHooks : BasicHooks
   Text       : Text
   TextBox    : TextBox
+  Map        : Map
   initialize : initialize
   context    : context
