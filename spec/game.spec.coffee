@@ -1,4 +1,4 @@
-{Fathom} = require "../fathom.js"
+{Fathom} = require "../fathom"
 
 describe 'Game', ->
   it 'has no currentState on create', ->

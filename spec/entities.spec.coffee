@@ -1,4 +1,4 @@
-{Fathom} = require "../fathom.js"
+{Fathom} = require "../fathom"
 
 describe 'Entities', ->
   it 'can add and remove an existing entity', ->

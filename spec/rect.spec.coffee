@@ -1,4 +1,4 @@
-{Fathom} = require "../fathom.js"
+{Fathom} = require "../fathom"
 
 describe 'Rects', ->
   it 'detects rect-rect collision', ->
