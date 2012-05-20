@@ -317,6 +317,10 @@ class Entity extends Rect
   render : (context) ->
     throw "NotImplementedException"
 
+  # Returns true if this collides with other, else false.
+  collides : (other) ->
+    throw "NotImplementedException"
+
   # Updates the Entity. Must be implemented in a subclass if it has group
   # "updateable".
   update : (entities) ->
@@ -327,8 +331,9 @@ class Entity extends Rect
   depth : () ->
     0
 
-class Tile
+class Tile extends Rect
   constructor : (@x, @y, @size, @type) ->
+    super(@x, @y, @size)
 
   render: (context) ->
     if @type == 0
@@ -344,12 +349,21 @@ class Map extends Entity
 
     @tiles = ((null for b in [0...height]) for a in [0...width])
 
-  setTile : (x, y, type = 0) =>
+  setTile : (x, y, type) =>
     @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
     @tiles[x][y]
 
   groups : ->
     ["renderable", "wall"]
+
+  collides : (other) ->
+    #TODO insanely inefficient.
+    for x in [0...@width]
+      for y in [0...@height]
+        if @tiles[x][y].type == 1 and @tiles[x][y].touchingRect other
+          return true
+
+    return false
 
   render : (context) ->
     for x in [0...@width]
