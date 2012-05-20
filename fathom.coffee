@@ -1,6 +1,8 @@
 # Type annotation for CoffeeScript/JavaScript.
 # TODO: Can probably be moved into some sort of metautil...
 
+"use strict"
+
 getType = (someObj) ->
   funcNameRegex = /function (.+)\(/
   results = (funcNameRegex).exec((someObj).constructor.toString())
@@ -49,7 +51,7 @@ class Key
 
   @addKeys : ->
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    @["KEY_" + chr] = alphabet.charCodeAt i for chr, i in alphabet
+    @[chr] = alphabet.charCodeAt i for chr, i in alphabet
 
   @start : ->
     @addKeys()
@@ -152,7 +154,7 @@ class Entities
   constructor : ->
     @entities = []
     @entityInfo = []
-  
+
   # Adds an entity.
   add : (entity) ->
     @entities.push entity
@@ -164,10 +166,10 @@ class Entities
   # * If you pass in a function f, for all returned objects, f(any object) ==
   # true.
   # * If you pass in anything else, an error will be raised.
-  
+
   get : (criteria) ->
     assert -> typeof criteria == "object"
-     
+
     remainingEntities = @entities
 
     for item in criteria
@@ -207,7 +209,7 @@ class Entities
   getEntity : (groups) ->
     result = @get groups
     assert -> result.length == 1
-    
+
     result[0]
 
   # I feel like the following methods should be moved outside of Entities,
@@ -282,7 +284,7 @@ class Entity extends Rect
 
     # Return the Entity object for easy chainability.
     this
-  
+
   # If a `callback` is provided, removes the callback from an event.
   # Fails silently if no callback was found. If no `callback` is
   # provided, all callbacks attached to an event are removed.
@@ -325,17 +327,8 @@ class Entity extends Rect
   depth : () ->
     0
 
-class Tile extends Entity
-  constructor : (x, y, size, type) ->
-    super
-
-    @type = type
-
-  groups : ->
-    if @type == 0
-      ["tile", "renderable"]
-    else
-      ["tile", "renderable", "wall"]
+class Tile
+  constructor : (@x, @y, @size, @type) ->
 
   render: (context) ->
     if @type == 0
@@ -347,11 +340,16 @@ class Tile extends Entity
 
 class Map extends Entity
   constructor : (@width, @height, @size) ->
+    super 0, 0, @size
+
     @tiles = ((null for b in [0...height]) for a in [0...width])
 
   setTile : (x, y, type = 0) =>
     @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
     @tiles[x][y]
+
+  groups : ->
+    ["renderable", "wall"]
 
   render : (context) ->
     for x in [0...@width]
