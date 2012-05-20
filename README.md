@@ -6,7 +6,7 @@ Fathom is a speedy, sexy JS/CoffeeScript game development library.
 
 First, clone our project!
 
-`git clone git://github.com/sarenji/fathom.git`
+`git clone --recursive git://github.com/sarenji/fathom.git`.
 
 ## Install dependencies
 
