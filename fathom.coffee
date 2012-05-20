@@ -49,7 +49,7 @@ class Key
 
   @addKeys : ->
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    @[chr] = alphabet.charCodeAt i for chr, i in alphabet
+    @["KEY_" + chr] = alphabet.charCodeAt i for chr, i in alphabet
 
   @start : ->
     @addKeys()
