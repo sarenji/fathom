@@ -325,19 +325,38 @@ class Entity extends Rect
   depth : () ->
     0
 
-class Map extends Entity
-  constructor : (x, y, size, all_entities, tileClass = null) ->
-    @size = size
+class Tile extends Entity
+  constructor : (x, y, size, type) ->
+    super
 
-    addTile = (x, y) =>
-      type = if y == 8 then 1 else 0
-      tile = new tileClass(x * @size, y * @size, @size, type)
-      all_entities.add tile
-      tile
-    @tiles = ((addTile(a, b) for b in [0...y]) for a in [0...x])
+    @type = type
+
+  groups : ->
+    if @type == 0
+      ["tile", "renderable"]
+    else
+      ["tile", "renderable", "wall"]
+
+  render: (context) ->
+    if @type == 0
+      context.fillStyle = "#f00"
+    else if @type == 1
+      context.fillStyle = "#ff0"
+
+    context.fillRect @x, @y, @size, @size
+
+class Map extends Entity
+  constructor : (@width, @height, @size) ->
+    @tiles = ((null for b in [0...height]) for a in [0...width])
+
+  setTile : (x, y, type = 0) =>
+    @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
+    @tiles[x][y]
 
   render : (context) ->
-
+    for x in [0...@width]
+      for y in [0...@height]
+        @tiles[x][y].render context
 
 class StaticImage extends Entity
   constructor : (source, destination) ->
