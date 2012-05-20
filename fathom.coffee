@@ -421,12 +421,12 @@ fixedInterval = (fn, fps=24) ->
   setInterval fn, 1000/fps
 
 context = null
-initialize = (gameLoop) ->
+initialize = (gameLoop, canvasSize) ->
   ready () ->
     Key.start()
 
     canv = document.createElement "canvas"
-    canv.width = canv.height = 500 #TODO: 500
+    canv.width = canv.height = canvasSize
     document.body.appendChild(canv)
 
     context = canv.getContext('2d')
