@@ -81,12 +81,12 @@ Types.types = (typeList...) ->
 # manage its groups. There are positives and negatives here.
 
 class Point
-  constructor : (x, y) ->
-    @x = x
-    @y = y
+  constructor : (@x, @y) ->
+    types $number, $number
 
 class Key
   @getCode : (e) ->
+    types $number
     if not e
       e = window.event
 
