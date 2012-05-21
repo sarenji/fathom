@@ -34,8 +34,6 @@ Types.$array = (type) ->
       "array(#{type(EVERYTHING)})"
 
 
-# TODO: correct number of arguments
-
 # You are not expected to understand this.
 Types.types = (typeList...) ->
   # Ascend the stack trace to get args of calling function.
@@ -46,6 +44,10 @@ Types.types = (typeList...) ->
 
     console.log err
     throw "TypeError"
+
+  if args.length != typeList.length
+    console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{Types.types.caller}"
+    throw "ArgumentCountError"
 
   for arg, i in args
     if typeof typeList[i] == "string"
