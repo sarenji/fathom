@@ -127,6 +127,11 @@ class BasicHooks
       object.vx /= decel
       object.vy /= decel
 
+  @moveForward: (object, direction) =>
+    () =>
+      object.x += direction.x
+      object.y += direction.y
+
   # TODO: See massive BasicHooks comment. 
   @platformerLike : (speed, object, entities) =>
     object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
