@@ -1,32 +1,63 @@
 # Type annotation for CoffeeScript/JavaScript.
 # TODO: Can probably be moved into some sort of metautil...
 
-"use strict"
-
 getType = (someObj) ->
   funcNameRegex = /function (.+)\(/
   results = (funcNameRegex).exec((someObj).constructor.toString())
   results[1]
 
-###
+# static typing
 
-Comment this out until I hash it into a better state.
+OUTER_ONLY = 0
+EVERYTHING = 1
+NEXT_FUNCTION = 2
 
+$string = (type = EVERYTHING) -> "string"
+$number = (type = EVERYTHING) -> "number"
+$array = (type) ->
+    (how_deep) ->
+      if how_deep == OUTER_ONLY
+        "array"
+      else if how_deep == NEXT_FUNCTION
+        type
+      else
+        "array(#{type(EVERYTHING)})"
+
+# You are not expected to understand this.
 types = (typeList...) ->
-  # Sneak up the stack trace to get args of calling function.
+  # Ascend the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments
 
   throwError = (expected, received) ->
-    err = "TypeError: got #{getType arg}, expected #{typeList[i]} in #{types.caller}"
+    err = "TypeError: got #{received}, expected #{expected} in #{types.caller}"
 
     console.log err
-    throw err
+    throw "TypeError"
 
   for arg, i in args
-    if (getType arg).toUpperCase() != (typeList[i]).toUpperCase()
-      throwError typeList[i], typeof arg
-###
-types = ->
+    if typeof typeList[i] == "string"
+      good = getType(arg) == typeList[i]
+      if not good
+        throwError typeList[i], getType(arg)
+      continue
+
+    switch typeList[i](OUTER_ONLY)
+      when "string"
+        if typeof arg != "string"
+          throwError typeList[i](true), typeof arg
+      when "number"
+        if typeof arg != "number"
+          throwError typeList[i](true), typeof arg
+      when "array"
+        good = (arg.length == 0 or (typeof arg[0]) == typeList[i](NEXT_FUNCTION)())
+
+        if not good
+          throwError typeList[i](EVERYTHING), typeof arg
+      else
+        throw "unknown type #{typeList[i](OUTER_ONLY)}"
+
+#test_test = (a, b, c) -> types "Point", $number, $array($string)
+#test_test(new Point(1, 2), 0, 0)
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
