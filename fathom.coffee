@@ -354,7 +354,7 @@ class Entity extends Rect
 
   # Returns true if this collides with other, else false.
   collides : (other) ->
-    throw "NotImplementedException"
+    false
 
   # Updates the Entity. Must be implemented in a subclass if it has group
   # "updateable".
