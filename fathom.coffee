@@ -198,6 +198,7 @@ class Entities
   # true.
   # * If you pass in anything else, an error will be raised.
 
+  #TODO: "criteria...". No reason to require it to be an array.
   get : (criteria) ->
     assert -> typeof criteria == "object"
 
@@ -457,12 +458,11 @@ class TextBox extends Text
     for phrase, i in @phrases
       context.fillText phrase, @x, @y + @size * i
 
-# A weak approximation of onReady from jQuery. All we care about to start up
-# Fathom is that document.body exists, which may not immediately be true.
+# To start Fathom, document.body must exist.
 ready = (callback) ->
   if document.body then callback() else setTimeout (-> ready callback), 250
 
-#This implementation is not complete.
+# TODO: This implementation is not complete.
 fixedInterval = (fn, fps=24) ->
   setInterval fn, 1000/fps
 
