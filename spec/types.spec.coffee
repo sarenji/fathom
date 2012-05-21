@@ -64,6 +64,16 @@ describe 'User types', ->
     Types.types Types.$("Point"), Types.$("ColorPoint")
     5
 
-  it 'Checks user types correctly.', -> (does_error(() -> addpoint (new Point(0, 0), new Point(0, 0)))).should.equal false
-  it 'Checks user types correctly.', -> (does_error(() -> addpoint (new Point(0, 0), new ColorPoint(0, 0)))).should.equal true
-  it 'Checks user types correctly.', -> (does_error(() -> colorz (new Point(0, 0), new ColorPoint(0, 0)))).should.equal false
+  it 'Checks user types correctly.', -> (does_error(() -> addpoint(new Point(0, 0), new Point(0, 0)))).should.equal false
+  it 'Checks user types correctly.', -> (does_error(() -> addpoint(new Point(0, 0), new ColorPoint(0, 0)))).should.equal true
+  it 'Checks user types correctly.', -> (does_error(() -> colorz(new Point(0, 0), new ColorPoint(0, 0)))).should.equal false
+
+describe 'Argument list length', ->
+  innocentFunction = (a, b, c) ->
+    Types.types Types.$number, Types.$number, Types.$number
+
+    a+b+c
+
+  it 'Validates argument length.', -> (does_error(() -> innocentFunction(1,1,1))).should.equal false
+  it 'Validates incorrect argument length.', -> (does_error(() -> innocentFunction(1,1,1,4))).should.equal true
+  it 'Validates incorrect argument length.', -> (does_error(() -> innocentFunction(1,1))).should.equal true
