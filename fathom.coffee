@@ -150,7 +150,15 @@ class BasicHooks
       object.x += direction.x
       object.y += direction.y
 
-  # TODO: See massive BasicHooks comment. 
+  @dieAtWall: (object, entities) =>
+    () =>
+
+  @dieOffScreen: (object, screen_width, screen_height) =>
+    () =>
+      if object.x <= 0 or object.y <= 0 or object.x >= screen_width or object.y >= screen_height
+        object.die()
+
+  # TODO: No idea how we're going to get entities here.
   @platformerLike : (speed, object, entities) =>
     object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
     object.vy += 5
