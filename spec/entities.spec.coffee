@@ -1,6 +1,6 @@
 {Fathom} = require "../fathom"
 
-describe 'Entities', ->
+describe 'Types', ->
   it 'can add and remove an existing entity', ->
     group = new Fathom.Entities
 

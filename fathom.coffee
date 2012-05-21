@@ -8,13 +8,15 @@ getType = (someObj) ->
 
 # static typing
 
+Types = {}
+
 OUTER_ONLY = 0
 EVERYTHING = 1
 NEXT_FUNCTION = 2
 
-$string = (type = EVERYTHING) -> "string"
-$number = (type = EVERYTHING) -> "number"
-$array = (type) ->
+Types.$string = (type = EVERYTHING) -> "string"
+Types.$number = (type = EVERYTHING) -> "number"
+Types.$array = (type) ->
     (how_deep) ->
       if how_deep == OUTER_ONLY
         "array"
@@ -24,12 +26,12 @@ $array = (type) ->
         "array(#{type(EVERYTHING)})"
 
 # You are not expected to understand this.
-types = (typeList...) ->
+Types.types = (typeList...) ->
   # Ascend the stack trace to get args of calling function.
-  args = Array.prototype.slice.call types.caller.arguments
+  args = Array.prototype.slice.call Types.types.caller.arguments
 
   throwError = (expected, received) ->
-    err = "TypeError: got #{received}, expected #{expected} in #{types.caller}"
+    err = "TypeError: got #{received}, expected #{expected} in #{Types.types.caller}"
 
     console.log err
     throw "TypeError"
@@ -55,9 +57,6 @@ types = (typeList...) ->
           throwError typeList[i](EVERYTHING), typeof arg
       else
         throw "unknown type #{typeList[i](OUTER_ONLY)}"
-
-#test_test = (a, b, c) -> types "Point", $number, $array($string)
-#test_test(new Point(1, 2), 0, 0)
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
@@ -478,6 +477,7 @@ initialize = (gameLoop, canvasID) ->
 
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
+exports.Types = Types
 exports.Fathom =
   Game       : Game
   Key        : Key
