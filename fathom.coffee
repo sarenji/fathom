@@ -312,6 +312,9 @@ class Entity extends Rect
     # Return the Entity object for easy chainability.
     this
 
+  die: (entities) ->
+    entities.removeEntity this
+
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
   groups : () ->
