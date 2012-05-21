@@ -89,19 +89,6 @@ class Key
 # type doesn't exist right now TODO and it's also a horrible name so I have to
 # rethink this. What it means until it does is that the controlled object must
 # have a vx and a vy.
-#
-# BasicHooks at the current point in time seems to make too many assumptions
-# about the user. This seems to suggest that either
-#   *) It doesn't belong in Fathom
-#   *) It belongs in a higher level of abstraction than what we're using right now. 
-#
-# I don't think that we can tell our users "this is how you should denote walls
-# when you create inherited Entities," so unless we figure out this problem
-# we're probably going to have to scrap BasicHooks.platformerLike.
-#
-# Another possibility is that jumping in platformerLike needs to be moved out
-# of BasicHooks.platformerLike. But then where does it go? The post-pre-update
-# hook? Yikes.
 class BasicHooks
   #TODO: When/if I understand coffeescript better: I should be able to not have
   #the user pass in object; it'll always be this, so I should just be able to
