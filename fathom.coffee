@@ -6,7 +6,7 @@ getType = (someObj) ->
   results = (funcNameRegex).exec((someObj).constructor.toString())
   results[1]
 
-# static typing
+# slightly-better-than-js-typing
 
 Types = {}
 
@@ -16,14 +16,25 @@ NEXT_FUNCTION = 2
 
 Types.$string = (type = EVERYTHING) -> "string"
 Types.$number = (type = EVERYTHING) -> "number"
+Types.$object = (type = EVERYTHING) -> "object"
+Types.$ = (type) ->
+  (how_deep) ->
+    if how_deep == OUTER_ONLY
+      "user type"
+    else
+      type
+
 Types.$array = (type) ->
-    (how_deep) ->
-      if how_deep == OUTER_ONLY
-        "array"
-      else if how_deep == NEXT_FUNCTION
-        type
-      else
-        "array(#{type(EVERYTHING)})"
+  (how_deep) ->
+    if how_deep == OUTER_ONLY
+      "array"
+    else if how_deep == NEXT_FUNCTION
+      type
+    else
+      "array(#{type(EVERYTHING)})"
+
+
+# TODO: correct number of arguments
 
 # You are not expected to understand this.
 Types.types = (typeList...) ->
@@ -50,11 +61,18 @@ Types.types = (typeList...) ->
       when "number"
         if typeof arg != "number"
           throwError typeList[i](true), typeof arg
+      when "object"
+        if typeof arg != "object"
+          throwError typeList[i](true), typeof arg
       when "array"
         good = (arg.length == 0 or (typeof arg[0]) == typeList[i](NEXT_FUNCTION)())
 
         if not good
           throwError typeList[i](EVERYTHING), typeof arg
+      when "user type"
+        good = typeList[i](EVERYTHING) == getType(arg)
+        if not good
+          throwError "user type: #{typeList[i](EVERYTHING)}", getType(arg)
       else
         throw "unknown type #{typeList[i](OUTER_ONLY)}"
 
