@@ -209,7 +209,7 @@ class Entities
 
   removeEntity : (entity) ->
     uid = entity.__fathom.uid
-    @entities = (e for e in @entities when not e.__fathom.uid == uid)
+    @entities = (e for e in @entities when e.__fathom.uid != uid)
 
   getEntity : (groups) ->
     result = @get groups
