@@ -88,6 +88,20 @@ describe 'User types with subtype relations', ->
   it 'General *not* allowed for specific.', -> (does_error(() -> specific(new Point(0, 0, 0)))).should.equal true
   it 'Ascends the proto chain convincingly.', -> (does_error(() -> general(new HyperPoint(0, 0, 0, 0)))).should.equal false
 
+describe 'Arrays and subtypes', ->
+  class Point
+    constructor : (@x, @y) ->
+
+  class SuperPoint extends Point
+    constructor (@x, @y, @z) ->
+
+  general = (p) -> Types.types Types.$array(Types.$("Point"))
+  specific = (p) -> Types.types Types.$array(Types.$("SuperPoint"))
+
+  it 'General allowed for general.', -> (does_error(() -> general([new Point(0, 0)]))).should.equal false
+  it 'Specific allowed for general.', -> (does_error(() -> general([new SuperPoint(0, 0, 0)]))).should.equal false
+  it 'Specific allowed for specific.', -> (does_error(() -> specific([new SuperPoint(0, 0, 0)]))).should.equal false
+  it 'General *not* allowed for specific.', -> (does_error(() -> specific([new Point(0, 0, 0)]))).should.equal true
 
 describe 'Argument list length', ->
   innocentFunction = (a, b, c) ->
