@@ -23,6 +23,8 @@ OUTER_ONLY = 0
 EVERYTHING = 1
 NEXT_FUNCTION = 2
 
+#TODO: Union types.
+#TODO: Heterogenous tuples.
 $string = (type = EVERYTHING) -> "string"
 $number = (type = EVERYTHING) -> "number"
 $object = (type = EVERYTHING) -> "object"
@@ -58,6 +60,9 @@ types = (typeList...) ->
     throw "ArgumentCountError"
 
   checkType = (type_given, object) ->
+    if typeof object == "undefined"
+      throw "YouUsedUndefinedYouMoronError"
+
     if typeof type_given == "string"
       good = getType(object) == type_given
       if not good
@@ -102,7 +107,7 @@ class Point
 
 class Key
   @getCode : (e) ->
-    types $number
+    types $('KeyboardEvent')
     if not e
       e = window.event
 
@@ -131,9 +136,11 @@ class Key
       @keysDown[@getCode e] = false
 
   @isDown : (key) ->
+    types $number
     @keysDown[key]
 
   @isUp : (key) ->
+    types $number
     if @keysDown[key]
       @keysDown[key] = false
       true
@@ -162,12 +169,14 @@ class BasicHooks
   # TODO: More customization.
   # TODO: Nice accelerating controls too, perhaps.
   @rpgLike : (speed, object) =>
+    types $number, $("Entity")
     () =>
       object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
       object.vy += (Key.isDown(Key.S) - Key.isDown(Key.W)) * speed
 
   # TODO: Pass in cutoff and decel.
   @decel : (object) =>
+    types $object
     cutoff = .5
     decel = 2
 
@@ -179,26 +188,30 @@ class BasicHooks
       object.vy /= decel
 
   @moveForward: (object, direction) =>
+    types $("Entity"), $("Point")
     () =>
       object.x += direction.x
       object.y += direction.y
 
   @dieAtWall: (object, entities) =>
+    types $("Entity"), $("Entities")
     () =>
 
-  @dieOffScreen: (object, screen_width, screen_height) =>
+  @dieOffScreen: (object, screen_width, screen_height, entities) =>
+    types $("Entity"), $number, $number, $("Entities")
     () =>
       if object.x <= 0 or object.y <= 0 or object.x >= screen_width or object.y >= screen_height
-        object.die()
+        object.die(entities)
 
   # TODO: No idea how we're going to get entities here.
   @platformerLike : (speed, object, entities) =>
+    types $number, $("Entity"), $("Entities")
     object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
     object.vy += 5
 
     # Need to check if we're on the ground before we jump
     if Key.isDown(Key.W)
-      onGround = entities.any ["wall", (other) -> other.touchingPoint(x : object.x, y : object.y + object.size + 5)]
+      onGround = entities.any [(other) -> other.collides(this)]
       console.log onGround
       if onGround
         object.vy -= 50
@@ -221,6 +234,7 @@ class Entities
 
   # Adds an entity.
   add : (entity) ->
+    types $("Entity")
     @entities.push entity
 
   # Get all Entities that match each of an array of criteria.
@@ -233,6 +247,7 @@ class Entities
 
   #TODO: "criteria...". No reason to require it to be an array.
   get : (criteria) ->
+    types $object #todo: not as strict as it could be
     assert -> typeof criteria == "object"
 
     remainingEntities = @entities
@@ -258,6 +273,7 @@ class Entities
   # Returns true if there is at least 1 object that matches each criteria,
   # false otherwise.
   any : (criteria) ->
+    types $object
     assert -> typeof criteria == "object"
 
     return (@get criteria).length > 0
@@ -266,12 +282,14 @@ class Entities
     decorator.call(this)
 
   removeEntities : (groups) ->
+    assert -> false #TODO: unimplemented.
 
   removeEntity : (entity) ->
     uid = entity.__fathom.uid
     @entities = (e for e in @entities when e.__fathom.uid != uid)
 
   getEntity : (groups) ->
+    types $object
     result = @get groups
     assert -> result.length == 1
 
@@ -290,6 +308,7 @@ class Entities
       entity.emit "post-render"
 
   update : (entities) ->
+    types $("Entities")
     for entity in @get ["updateable"]
       entity.emit "pre-update"
       entity.update entities
@@ -310,11 +329,13 @@ class State extends Entities
 
 class Rect
   constructor: (@x, @y, @size) ->
+    types $number, $number, $number
     @right = @x + @size
     @bottom = @y + @size
 
   # Returns true if the current rect touches rect `other`.
   touchingRect : (other) ->
+    types $("Rect")
     not (other.x              > @x + @size or
          other.x + other.size < @x         or
          other.y              > @y + @size or
@@ -322,6 +343,7 @@ class Rect
 
   # Returns true if this rect contains point `point`.
   touchingPoint : (point) ->
+    types $("Point")
     @x <= point.x <= @x + @size and @y <= point.y <= @y + @size
 
 # Entity
@@ -335,6 +357,7 @@ class Rect
 # which takes an event name.
 class Entity extends Rect
   constructor : (x = 0, y = 0, size = 20) ->
+    types $number, $number, $number
     super
 
     @__fathom =
@@ -373,6 +396,7 @@ class Entity extends Rect
     this
 
   die: (entities) ->
+    types $("Entities")
     entities.removeEntity this
 
   # Returns an array of the groups this Entity is a member of. Must be
@@ -401,6 +425,7 @@ class Entity extends Rect
 
 class Tile extends Rect
   constructor : (@x, @y, @size, @type) ->
+    types $number, $number, $number, $number
     super(@x, @y, @size)
 
   render: (context) ->
@@ -413,11 +438,13 @@ class Tile extends Rect
 
 class Map extends Entity
   constructor : (@width, @height, @size) ->
+    types $number, $number, $number
     super 0, 0, @size
 
     @tiles = ((null for b in [0...height]) for a in [0...width])
 
   setTile : (x, y, type) =>
+    types $number, $number, $number
     @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
     @tiles[x][y]
 
@@ -425,6 +452,7 @@ class Map extends Entity
     ["renderable", "wall"]
 
   collides : (other) ->
+    types $('Entity')
     #TODO insanely inefficient.
     for x in [0...@width]
       for y in [0...@height]
@@ -445,6 +473,7 @@ class StaticImage extends Entity
 
 class Text extends Entity
   constructor : (@text, x=0, y=0, opts={}) ->
+    types $string, $number, $number, $object
     super x, y
     @color    = opts.color    || "#000000"
     @baseline = opts.baseline || "top"
@@ -521,5 +550,6 @@ exports.Fathom =
   Text       : Text
   TextBox    : TextBox
   Map        : Map
+  Point      : Point
   initialize : initialize
   context    : context
