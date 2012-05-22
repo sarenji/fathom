@@ -6,25 +6,34 @@ getType = (someObj) ->
   results = (funcNameRegex).exec((someObj).constructor.toString())
   results[1]
 
-# slightly-better-than-js-typing
+getSuperclasses = (obj) ->
+  superclasses = []
+  while true
+    superclasses.push(getType(obj))
 
-Types = {}
+    if not obj.__proto__
+      break
+    obj = obj.__proto__
+  
+  superclasses
+
+# slightly-better-than-js-typing
 
 OUTER_ONLY = 0
 EVERYTHING = 1
 NEXT_FUNCTION = 2
 
-Types.$string = (type = EVERYTHING) -> "string"
-Types.$number = (type = EVERYTHING) -> "number"
-Types.$object = (type = EVERYTHING) -> "object"
-Types.$ = (type) ->
+$string = (type = EVERYTHING) -> "string"
+$number = (type = EVERYTHING) -> "number"
+$object = (type = EVERYTHING) -> "object"
+$ = (type) ->
   (how_deep) ->
     if how_deep == OUTER_ONLY
       "user type"
     else
       type
 
-Types.$array = (type) ->
+$array = (type) ->
   (how_deep) ->
     if how_deep == OUTER_ONLY
       "array"
@@ -33,9 +42,8 @@ Types.$array = (type) ->
     else
       "array(#{type(EVERYTHING)})"
 
-
 # You are not expected to understand this.
-Types.types = (typeList...) ->
+types = (typeList...) ->
   # Ascend the stack trace to get args of calling function.
   args = Array.prototype.slice.call Types.types.caller.arguments
 
@@ -72,11 +80,13 @@ Types.types = (typeList...) ->
         if not good
           throwError typeList[i](EVERYTHING), typeof arg
       when "user type"
-        good = typeList[i](EVERYTHING) == getType(arg)
+        good = getSuperclasses(arg).indexOf(typeList[i](EVERYTHING)) != -1
         if not good
           throwError "user type: #{typeList[i](EVERYTHING)}", getType(arg)
       else
         throw "unknown type #{typeList[i](OUTER_ONLY)}"
+
+Types = {$number: $number, $string: $string, $object: $object, $: $, $array: $array, types: types}
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
