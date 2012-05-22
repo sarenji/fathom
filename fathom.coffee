@@ -57,35 +57,39 @@ types = (typeList...) ->
     console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{Types.types.caller}"
     throw "ArgumentCountError"
 
-  for arg, i in args
-    if typeof typeList[i] == "string"
-      good = getType(arg) == typeList[i]
+  checkType = (type_given, object) ->
+    if typeof type_given == "string"
+      good = getType(object) == type_given
       if not good
-        throwError typeList[i], getType(arg)
-      continue
+        throwError type_given, getType(object)
+      return true
 
-    switch typeList[i](OUTER_ONLY)
+    switch type_given(OUTER_ONLY)
       when "string"
-        if typeof arg != "string"
-          throwError typeList[i](true), typeof arg
+        if typeof object != "string"
+          throwError type_given(true), typeof object
       when "number"
-        if typeof arg != "number"
-          throwError typeList[i](true), typeof arg
+        if typeof object != "number"
+          throwError type_given(true), typeof object
       when "object"
-        if typeof arg != "object"
-          throwError typeList[i](true), typeof arg
+        if typeof object != "object"
+          throwError type_given(true), typeof object
       when "array"
-        good = (arg.length == 0 or (typeof arg[0]) == typeList[i](NEXT_FUNCTION)())
+        good = (object.length == 0 or checkType(type_given(NEXT_FUNCTION), object[0]))
 
         if not good
-          throwError typeList[i](EVERYTHING), typeof arg
+          throwError type_given(EVERYTHING), typeof object
       when "user type"
-        good = getSuperclasses(arg).indexOf(typeList[i](EVERYTHING)) != -1
+        good = getSuperclasses(object).indexOf(type_given(EVERYTHING)) != -1
         if not good
-          throwError "user type: #{typeList[i](EVERYTHING)}", getType(arg)
+          throwError "user type: #{type_given(EVERYTHING)}", getType(object)
       else
-        throw "unknown type #{typeList[i](OUTER_ONLY)}"
+        throw "unknown type #{type_given(OUTER_ONLY)}"
 
+    true
+
+  for arg, i in args
+    checkType(typeList[i], arg)
 Types = {$number: $number, $string: $string, $object: $object, $: $, $array: $array, types: types}
 
 # TODO
