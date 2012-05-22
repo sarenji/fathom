@@ -4,6 +4,7 @@ does_error = (fn) ->
   try
     fn()
   catch error
+    console.log error
     return true
   return false
 
@@ -67,6 +68,26 @@ describe 'User types', ->
   it 'Checks user types correctly.', -> (does_error(() -> addpoint(new Point(0, 0), new Point(0, 0)))).should.equal false
   it 'Checks user types correctly.', -> (does_error(() -> addpoint(new Point(0, 0), new ColorPoint(0, 0)))).should.equal true
   it 'Checks user types correctly.', -> (does_error(() -> colorz(new Point(0, 0), new ColorPoint(0, 0)))).should.equal false
+
+describe 'User types with subtype relations', ->
+  class Point
+    constructor : (@x, @y) ->
+
+  class SuperPoint extends Point
+    constructor (@x, @y, @z) ->
+
+  class HyperPoint extends SuperPoint
+    constructor (@x, @y, @z, @q) ->
+
+  general = (p1) -> Types.types Types.$("Point")
+  specific = (p1) -> Types.types Types.$("SuperPoint")
+
+  it 'General allowed for general.', -> (does_error(() -> general(new Point(0, 0)))).should.equal false
+  it 'Specific allowed for general.', -> (does_error(() -> general(new SuperPoint(0, 0, 0)))).should.equal false
+  it 'Specific allowed for specific.', -> (does_error(() -> specific(new SuperPoint(0, 0, 0)))).should.equal false
+  it 'General *not* allowed for specific.', -> (does_error(() -> specific(new Point(0, 0, 0)))).should.equal true
+  it 'Ascends the proto chain convincingly.', -> (does_error(() -> general(new HyperPoint(0, 0, 0, 0)))).should.equal false
+
 
 describe 'Argument list length', ->
   innocentFunction = (a, b, c) ->
