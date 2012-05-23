@@ -44,7 +44,6 @@ $array = (type) ->
     else
       "array(#{type(EVERYTHING)})"
 
-# You are not expected to understand this.
 types = (typeList...) ->
   # Ascend the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments

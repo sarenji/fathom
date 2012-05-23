@@ -2,6 +2,10 @@
 # I'm not sure if I like the idea of each Entity just having a function to
 # manage its groups. There are positives and negatives here.
 
+arraysEqual = (a, b) ->
+  !!a && !!b && !(a<b || b<a)
+
+
 class Point
   constructor : (@x, @y) ->
     types $number, $number
@@ -30,7 +34,6 @@ class Key
     @flush()
 
     document.onkeydown = (e) =>
-      console.log @getCode e
       @keysDown[@getCode e] = true
 
     document.onkeyup = (e) =>
@@ -337,6 +340,23 @@ class Tile extends Rect
 
     context.fillRect @x, @y, @size, @size
 
+#TODO: Remove hardcoded width and height.
+
+loadImage = (loc, callback) ->
+  img = document.createElement('img')
+  img.src = loc
+  img.onload = () ->
+    temp_context.drawImage(img, 0, 0)
+    data = temp_context.getImageData(0, 0, img.width, img.height).data
+    pixels = ([] for x in [0...20])
+
+    for x in [0...20]
+      for y in [0...20]
+        z = (x * img.width + y) * 4
+        pixels[x][y] = [data[z], data[z+1], data[z+2]]
+
+    callback(pixels)
+
 class Map extends Entity
   constructor : (@width, @height, @size) ->
     types $number, $number, $number
@@ -348,6 +368,19 @@ class Map extends Entity
     types $number, $number, $number
     @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
     @tiles[x][y]
+
+  fromImage : (loc, callback) ->
+    loadImage loc, (data) =>
+
+      for x in [0...20]
+        for y in [0...20]
+          if arraysEqual(data[x][y], [0,0,0])
+            val = 1
+          else
+            val = 0
+
+          @setTile(x, y, val)
+      callback()
 
   groups : ->
     ["renderable", "wall"]
@@ -429,9 +462,15 @@ ready = (callback) ->
 fixedInterval = (fn, fps=24) ->
   setInterval fn, 1000/fps
 
-context = null
+context = null # Graphics context for the game.
+temp_context = null # Context for temporary stuff i.e. reading pixel data (invisible).
+
 initialize = (gameLoop, canvasID) ->
   ready () ->
+    canv = document.createElement "canvas"
+    canv.width = canv.height = 500
+    temp_context = canv.getContext('2d')
+
     Key.start()
 
     canv = document.getElementById canvasID
