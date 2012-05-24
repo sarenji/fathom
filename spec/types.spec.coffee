@@ -1,23 +1,15 @@
 {Types} = require "../types"
 
-does_error = (fn) ->
-  try
-    fn()
-  catch error
-    console.log error
-    return true
-  return false
-
 describe 'Number types', ->
   adder = (x, y) ->
     Types.types Types.$number, Types.$number
     x + y
 
   it 'Typechecks simple types.', ->
-    (does_error(() -> adder 1, 2)).should.equal false
+    (() -> adder 1, 2).should.throw
 
   it 'Can fail', ->
-    (does_error(() -> adder "a", "b")).should.equal true
+    (() -> adder "a", "b").should.not.throw
 
 describe 'Other simple types', ->
   simple = (str, obj) ->
@@ -30,19 +22,19 @@ describe 'Other simple types', ->
     fn(5)
 
   it 'Accepts string and object types.', ->
-    (does_error(() -> simple "ima string", {ima_object: true})).should.equal false
+    (() -> simple "ima string", {ima_object: true}).should.not.throw
 
   it 'Accepts function types.', ->
-    (does_error(() -> fntaker((x) -> x + 1))).should.equal false
+    (() -> fntaker((x) -> x + 1)).should.not.throw
 
   it 'Checks function correctly.', ->
-    (does_error(() -> fntaker 5)).should.equal true
+    (() -> fntaker 5).should.throw
 
   it 'Checks string correctly.', ->
-    (does_error(() -> simple [], {})).should.equal true
+    (() -> simple [], {}).should.throw
 
   it 'Checks object correctly.', ->
-    (does_error(() -> simple "", "")).should.equal true
+    (() -> simple "", "").should.throw
 
 describe 'Arrays', ->
   numarray = (arr) ->
@@ -53,12 +45,12 @@ describe 'Arrays', ->
     Types.types Types.$array(Types.$string)
     0
 
-  it 'Checks arrays correctly.', -> (does_error(() -> numarray [5])).should.equal false
-  it 'Checks arrays correctly.', -> (does_error(() -> strarray ["l"])).should.equal false
-  it 'Approves empty arrays.', -> (does_error(() -> strarray [])).should.equal false
-  it 'Approves empty arrays.', -> (does_error(() -> numarray [])).should.equal false
-  it 'Errors on bad arrays.', -> (does_error(() -> numarray ["f"])).should.equal true
-  it 'Errors on bad arrays.', -> (does_error(() -> strarray [5])).should.equal true
+  it 'Checks arrays correctly.', -> (() -> numarray [5]).should.not.throw
+  it 'Checks arrays correctly.', -> (() -> strarray ["l"]).should.not.throw
+  it 'Approves empty arrays.', -> (() -> strarray []).should.not.throw
+  it 'Approves empty arrays.', -> (() -> numarray []).should.not.throw
+  it 'Errors on bad arrays.', -> (() -> numarray ["f"]).should.throw
+  it 'Errors on bad arrays.', -> (() -> strarray [5]).should.throw
 
 describe 'User types', ->
   class Point
@@ -75,9 +67,9 @@ describe 'User types', ->
     Types.types Types.$("Point"), Types.$("ColorPoint")
     5
 
-  it 'Checks user types correctly.', -> (does_error(() -> addpoint(new Point(0, 0), new Point(0, 0)))).should.equal false
-  it 'Checks user types correctly.', -> (does_error(() -> addpoint(new Point(0, 0), new ColorPoint(0, 0)))).should.equal true
-  it 'Checks user types correctly.', -> (does_error(() -> colorz(new Point(0, 0), new ColorPoint(0, 0)))).should.equal false
+  it 'Checks user types correctly.', -> (() -> addpoint(new Point(0, 0), new Point(0, 0))).should.not.throw
+  it 'Checks user types correctly.', -> (() -> addpoint(new Point(0, 0), new ColorPoint(0, 0))).should.throw
+  it 'Checks user types correctly.', -> (() -> colorz(new Point(0, 0), new ColorPoint(0, 0))).should.not.throw
 
 describe 'User types with subtype relations', ->
   class Point
@@ -92,11 +84,11 @@ describe 'User types with subtype relations', ->
   general = (p1) -> Types.types Types.$("Point")
   specific = (p1) -> Types.types Types.$("SuperPoint")
 
-  it 'General allowed for general.', -> (does_error(() -> general(new Point(0, 0)))).should.equal false
-  it 'Specific allowed for general.', -> (does_error(() -> general(new SuperPoint(0, 0, 0)))).should.equal false
-  it 'Specific allowed for specific.', -> (does_error(() -> specific(new SuperPoint(0, 0, 0)))).should.equal false
-  it 'General *not* allowed for specific.', -> (does_error(() -> specific(new Point(0, 0, 0)))).should.equal true
-  it 'Ascends the proto chain convincingly.', -> (does_error(() -> general(new HyperPoint(0, 0, 0, 0)))).should.equal false
+  it 'General allowed for general.', -> (() -> general(new Point(0, 0))).should.not.throw
+  it 'Specific allowed for general.', -> (() -> general(new SuperPoint(0, 0, 0))).should.not.throw
+  it 'Specific allowed for specific.', -> (() -> specific(new SuperPoint(0, 0, 0))).should.not.throw
+  it 'General *not* allowed for specific.', -> (() -> specific(new Point(0, 0, 0))).should.throw
+  it 'Ascends the proto chain convincingly.', -> (() -> general(new HyperPoint(0, 0, 0, 0))).should.throw
 
 describe 'Arrays and subtypes', ->
   class Point
@@ -108,10 +100,10 @@ describe 'Arrays and subtypes', ->
   general = (p) -> Types.types Types.$array(Types.$("Point"))
   specific = (p) -> Types.types Types.$array(Types.$("SuperPoint"))
 
-  it 'General allowed for general.', -> (does_error(() -> general([new Point(0, 0)]))).should.equal false
-  it 'Specific allowed for general.', -> (does_error(() -> general([new SuperPoint(0, 0, 0)]))).should.equal false
-  it 'Specific allowed for specific.', -> (does_error(() -> specific([new SuperPoint(0, 0, 0)]))).should.equal false
-  it 'General *not* allowed for specific.', -> (does_error(() -> specific([new Point(0, 0, 0)]))).should.equal true
+  it 'General allowed for general.', -> (() -> general([new Point(0, 0)])).should.not.throw
+  it 'Specific allowed for general.', -> (() -> general([new SuperPoint(0, 0, 0)])).should.not.throw
+  it 'Specific allowed for specific.', -> (() -> specific([new SuperPoint(0, 0, 0)])).should.not.throw
+  it 'General *not* allowed for specific.', -> (() -> specific([new Point(0, 0, 0)])).should.throw
 
 describe 'Argument list length', ->
   innocentFunction = (a, b, c) ->
@@ -119,8 +111,8 @@ describe 'Argument list length', ->
 
     a+b+c
 
-  it 'Validates argument length.', -> (does_error(() -> innocentFunction(1,1,1))).should.equal false
-  it 'Validates incorrect argument length.', -> (does_error(() -> innocentFunction(1,1,1,4))).should.equal true
-  it 'Validates incorrect argument length.', -> (does_error(() -> innocentFunction(1,1))).should.equal true
+  it 'Validates argument length.', -> (() -> innocentFunction(1,1,1)).should.not.throw
+  it 'Validates incorrect argument length.', -> (() -> innocentFunction(1,1,1,4)).should.throw
+  it 'Validates incorrect argument length.', -> (() -> innocentFunction(1,1)).should.throw
 
 
