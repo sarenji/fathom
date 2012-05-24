@@ -294,8 +294,8 @@ class Entity extends Rect
     super
 
     @__fathom =
-      uid   : getUniqueID()
-      events: {}
+      uid    : getUniqueID()
+      events : {}
 
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
@@ -369,6 +369,12 @@ class Tile extends Rect
 
     context.fillRect @x, @y, @size, @size
 
+class Pixel
+  constructor: (@r, @g, @b, @a) -> types $number, $number, $number, $number
+  eq: (p) ->
+    types $("Pixel")
+    @r == p.r and @g == p.g and @b == p.b and @a = p.a
+
 #TODO: Remove hardcoded width and height.
 
 loadImage = (loc, callback) ->
@@ -377,12 +383,12 @@ loadImage = (loc, callback) ->
   img.onload = () ->
     temp_context.drawImage(img, 0, 0)
     data = temp_context.getImageData(0, 0, img.width, img.height).data
-    pixels = ([] for x in [0...20])
+    pixels = ([] for x in [0...img.width])
 
-    for x in [0...20]
-      for y in [0...20]
+    for x in [0...img.width]
+      for y in [0...img.height]
         z = (x * img.width + y) * 4
-        pixels[x][y] = [data[z], data[z+1], data[z+2]]
+        pixels[x][y] = new Pixel(data[z], data[z+1], data[z+2], data[z+3])
 
     callback(pixels)
 
@@ -406,7 +412,7 @@ class Map extends Entity
       @data = data
       for x in [0...@width]
         for y in [0...@height]
-          if arraysEqual(data[x][y], [0,0,0])
+          if data[x][y].eq(new Pixel(0,0,0,255))
             val = 1
           else
             val = 0
