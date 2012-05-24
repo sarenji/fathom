@@ -28,6 +28,8 @@ NEXT_FUNCTION = 2
 $string = (type = EVERYTHING) -> "string"
 $number = (type = EVERYTHING) -> "number"
 $object = (type = EVERYTHING) -> "object"
+$function = (type = EVERYTHING) -> "function" #doing better function types seems very hard.
+
 $ = (type) ->
   (how_deep) ->
     if how_deep == OUTER_ONLY
@@ -78,6 +80,9 @@ types = (typeList...) ->
       when "object"
         if typeof object != "object"
           throwError type_given(true), typeof object
+      when "function"
+        if typeof object != "function"
+          throwError type_given(true), typeof object
       when "array"
         good = (object.length == 0 or checkType(type_given(NEXT_FUNCTION), object[0]))
 
@@ -102,5 +107,6 @@ exports.$number = $number
 exports.$string = $string
 exports.$object = $object
 exports.$array = $array
+exports.$function = $function
 exports.types = types
 exports.Types = {$ : $, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}
