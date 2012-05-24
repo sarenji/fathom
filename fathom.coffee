@@ -89,7 +89,7 @@ class Key
   @flush: ->
     @start(false)
 
-# BasicHooks provides callbacks for simple arrow-based movement. We choose
+# BasicHooks provides callbacks for simple arrow-key-based movement. We choose
 # to return callbacks because we get some nice convience with callback-related
 # hooks, especially `pre-update`. See Depths TODO for a good example of this.
 # 
@@ -134,11 +134,15 @@ class BasicHooks
     types $("Entity"), $("Entities")
     () =>
 
-  @dieOffScreen: (object, screen_width, screen_height, entities) =>
-    types $("Entity"), $number, $number, $("Entities")
+  @leaveScreen: (object, screenWidth, screenHeight, cb) =>
     () =>
-      if object.x <= 0 or object.y <= 0 or object.x >= screen_width or object.y >= screen_height
-        object.die(entities)
+      if object.x <= 0 or object.y <= 0 or object.x >= screenWidth or object.y >= screenHeight
+        cb.bind(object)()
+
+  @dieOffScreen: (object, screenWidth, screenHeight, entities) =>
+    types $("Entity"), $number, $number, $("Entities")
+    BasicHooks.leaveScreen object, screenWidth, screenHeight, ->
+      object.die(entities)
 
   # TODO: No idea how we're going to get entities here.
   @platformerLike: (speed, object, entities) =>
