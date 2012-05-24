@@ -103,3 +103,4 @@ exports.$string = $string
 exports.$object = $object
 exports.$array = $array
 exports.types = types
+exports.Types = {$ : $, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}
