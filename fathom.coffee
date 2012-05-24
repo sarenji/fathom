@@ -7,8 +7,18 @@ arraysEqual = (a, b) ->
 
 
 class Point
-  constructor : (@x, @y) ->
-    types $number, $number
+  constructor : (@x, @y) -> types $number, $number
+
+class Vector
+  constructor : (@x, @y) -> types $number, $number
+
+  multiply : (n) ->
+    types $number
+    @x *= n
+    @y *= n
+
+  nonzero : () ->
+    @x != 0 or @y != 0
 
 class Key
   @getCode : (e) ->
@@ -92,7 +102,7 @@ class BasicHooks
       object.vy /= decel
 
   @moveForward: (object, direction) =>
-    types $("Entity"), $("Point")
+    types $("Entity"), $("Vector")
     () =>
       object.x += direction.x
       object.y += direction.y
@@ -490,5 +500,6 @@ exports.Fathom =
   TextBox    : TextBox
   Map        : Map
   Point      : Point
+  Vector     : Vector
   initialize : initialize
   context    : context
