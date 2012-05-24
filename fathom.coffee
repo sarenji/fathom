@@ -406,25 +406,36 @@ class Map extends Entity
 
     @tiles = ((null for b in [0...height]) for a in [0...width])
     @data = undefined
+    @corner = new Point(0, 0)
 
   setTile: (x, y, type) =>
     types $number, $number, $number
     @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
-    @tiles[x][y]
 
-  fromImage: (loc, callback) ->
+  # Set the top right corner of the visible map.
+  # TODO: This has a bad name. TODO and now it's even worse because it's a delta.
+  setCorner: (diff) ->
+    types $("Vector")
+    @corner.add(diff.multiply(@width))
+
+    for x in [0... + @width]
+      for y in [0... + @height]
+        if @data[@corner.x + x][@corner.y + y].eq(new Pixel(0, 0, 0, 255)) #TODO. Too specific.
+          val = 1
+        else
+          val = 0
+
+        @setTile(x, y, val)
+
+  fromImage: (loc, corner, callback) ->
+    types $string, $("Vector"), $function
     if @data
+      @setCorner(corner)
       return
+
     loadImage loc, (data) =>
       @data = data
-      for x in [0...@width]
-        for y in [0...@height]
-          if data[x][y].eq(new Pixel(0,0,0,255))
-            val = 1
-          else
-            val = 0
-
-          @setTile(x, y, val)
+      @setCorner(corner)
       callback()
 
   groups: ->
