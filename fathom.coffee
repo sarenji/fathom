@@ -32,6 +32,13 @@ class Vector
     types $number
     @x *= n
     @y *= n
+    this
+
+  normalize : () ->
+    mag = Math.sqrt(@x * @x + @y * @y)
+    @x /= mag
+    @y /= mag
+    this
 
   nonzero : () ->
     @x != 0 or @y != 0
