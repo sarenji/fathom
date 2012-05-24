@@ -1,3 +1,13 @@
+if typeof window == 'undefined' # using node?
+  {$, $number, $function, $string, $object, types} = (require "./types").Types
+else
+  $ = this.$
+  $number = this.$number
+  $string = this.$string
+  $object = this.$object
+  $function = this.$function
+  types = this.types
+
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
 # manage its groups. There are positives and negatives here.
@@ -269,7 +279,7 @@ class State extends Entities
 
 class Rect
   constructor: (@x, @y, @size) ->
-    types $number, $number, $number
+    #types $number, $number, $number TYPE TODO
     @right = @x + @size
     @bottom = @y + @size
 
@@ -297,7 +307,7 @@ class Rect
 # which takes an event name.
 class Entity extends Rect
   constructor: (x = 0, y = 0, size = 20) ->
-    types $number, $number, $number
+    #types $number, $number, $number
     super
 
     @__fathom =
@@ -317,9 +327,11 @@ class Entity extends Rect
   # Fails silently if no callback was found. If no `callback` is
   # provided, all callbacks attached to an event are removed.
   off: (event, callback = null) ->
+    #TODO: I don't like how this is a non-noisy failure.
     if callback
-      @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
-      delete @__fathom.events[event] if @__fathom.events[event].length == 0
+      if @__fathom.events[event]
+        @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
+        delete @__fathom.events[event] if @__fathom.events[event].length == 0
     else if event
       delete @__fathom.events[event]
 
