@@ -144,7 +144,6 @@ class BasicHooks
     BasicHooks.leaveScreen object, screenWidth, screenHeight, ->
       object.die(entities)
 
-  # TODO: No idea how we're going to get entities here.
   @platformerLike: (speed, object, entities) =>
     types $number, $("Entity"), $("Entities")
     object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
