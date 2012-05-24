@@ -544,6 +544,7 @@ exports.Fathom =
   Entities   : Entities
   BasicHooks : BasicHooks
   Text       : Text
+  Rect       : Rect
   TextBox    : TextBox
   Map        : Map
   Point      : Point
