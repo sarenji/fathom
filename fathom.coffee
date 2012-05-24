@@ -385,6 +385,7 @@ class Map extends Entity
     super 0, 0, @size
 
     @tiles = ((null for b in [0...height]) for a in [0...width])
+    @data = undefined
 
   setTile : (x, y, type) =>
     types $number, $number, $number
@@ -392,10 +393,12 @@ class Map extends Entity
     @tiles[x][y]
 
   fromImage : (loc, callback) ->
+    if @data
+      return
     loadImage loc, (data) =>
-
-      for x in [0...20]
-        for y in [0...20]
+      @data = data
+      for x in [0...@width]
+        for y in [0...@height]
           if arraysEqual(data[x][y], [0,0,0])
             val = 1
           else
