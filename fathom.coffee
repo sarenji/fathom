@@ -53,20 +53,18 @@ class Key
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     @[chr] = alphabet.charCodeAt i for chr, i in alphabet
 
-  @start : ->
+  @start : (addListeners=true) ->
     @addKeys()
 
-    @keysDown = {}
-    @flush()
+    @keysDown = (false for x in [0..255])
 
-    document.onkeydown = (e) =>
-      @keysDown[@getCode e] = true
-
-    document.onkeyup = (e) =>
-      @keysDown[@getCode e] = false
+    if addListeners
+      document.onkeydown = (e) => @keysDown[@getCode e] = true
+      document.onkeyup = (e) => @keysDown[@getCode e] = false
 
   @isDown : (key) ->
     types $number
+
     @keysDown[key]
 
   @isUp : (key) ->
@@ -78,9 +76,7 @@ class Key
       false
 
   @flush : ->
-    @keysDown = {}
-    @keysDown[x] = false for x in [0..255]
-
+    @start(false)
 
 # BasicHooks provides callbacks for simple arrow-based movement. We choose
 # to return callbacks because we get some nice convience with callback-related
