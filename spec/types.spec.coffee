@@ -1,4 +1,4 @@
-{Types} = require "../fathom"
+{Types} = require "../types"
 
 does_error = (fn) ->
   try
@@ -25,8 +25,18 @@ describe 'Other simple types', ->
     str[0]
     obj
 
+  fntaker = (fn) ->
+    Types.types Types.$function
+    fn(5)
+
   it 'Accepts string and object types.', ->
     (does_error(() -> simple "ima string", {ima_object: true})).should.equal false
+
+  it 'Accepts function types.', ->
+    (does_error(() -> fntaker((x) -> x + 1))).should.equal false
+
+  it 'Checks function correctly.', ->
+    (does_error(() -> fntaker 5)).should.equal true
 
   it 'Checks string correctly.', ->
     (does_error(() -> simple [], {})).should.equal true
@@ -112,3 +122,5 @@ describe 'Argument list length', ->
   it 'Validates argument length.', -> (does_error(() -> innocentFunction(1,1,1))).should.equal false
   it 'Validates incorrect argument length.', -> (does_error(() -> innocentFunction(1,1,1,4))).should.equal true
   it 'Validates incorrect argument length.', -> (does_error(() -> innocentFunction(1,1))).should.equal true
+
+
