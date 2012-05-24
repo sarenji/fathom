@@ -24,6 +24,10 @@ class Util
 
 class Point
   constructor: (@x, @y) -> types $number, $number
+  add: (v) ->
+    types $("Vector")
+    @x += v.x
+    @y += v.y
 
 class Vector
   constructor: (@x, @y) -> types $number, $number
