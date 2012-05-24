@@ -5,6 +5,22 @@
 arraysEqual = (a, b) ->
   !!a && !!b && !(a<b || b<a)
 
+class Util
+  # Sign of a number.
+  @sign : (n) ->
+    if n > 0
+      1
+    else if n < 0
+      -1
+    else
+      0
+
+  # Return a vector representing movement.
+  # TODO: Support up/down/left/right also.
+  @movementVector : () ->
+    x = (Key.isDown(Key.D) - Key.isDown(Key.A))
+    y = (Key.isDown(Key.S) - Key.isDown(Key.W))
+    new Vector(x, y)
 
 class Point
   constructor : (@x, @y) -> types $number, $number
@@ -492,6 +508,7 @@ initialize = (gameLoop, canvasID) ->
 exports = (module?.exports or this)
 exports.Fathom =
   Game       : Game
+  Util       : Util
   Key        : Key
   Entity     : Entity
   Entities   : Entities
