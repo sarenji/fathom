@@ -395,7 +395,7 @@ loadImage = (loc, callback) ->
     for x in [0...img.width]
       for y in [0...img.height]
         z = (x * img.width + y) * 4
-        pixels[x][y] = new Pixel(data[z], data[z+1], data[z+2], data[z+3])
+        pixels[y][x] = new Pixel(data[z], data[z+1], data[z+2], data[z+3])
 
     callback(pixels)
 
