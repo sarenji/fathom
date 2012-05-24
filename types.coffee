@@ -23,6 +23,9 @@ OUTER_ONLY = 0
 EVERYTHING = 1
 NEXT_FUNCTION = 2
 
+#buildConstraint = (type, constraintfn) ->
+#$string = new Constraint()
+
 #TODO: Union types.
 #TODO: Heterogenous tuples.
 $string = (type = EVERYTHING) -> "string"
@@ -102,11 +105,4 @@ types = (typeList...) ->
 #Types = {$number: $number, $string: $string, $object: $object, $: $, $array: $array, types: types}
 
 exports = (module?.exports or this)
-exports.$ = $
-exports.$number = $number
-exports.$string = $string
-exports.$object = $object
-exports.$array = $array
-exports.$function = $function
-exports.types = types
 exports.Types = {$ : $, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}

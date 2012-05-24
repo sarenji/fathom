@@ -1,12 +1,4 @@
-if typeof window == 'undefined' # using node?
-  {$, $number, $function, $string, $object, types} = (require "./types").Types
-else
-  $ = this.$
-  $number = this.$number
-  $string = this.$string
-  $object = this.$object
-  $function = this.$function
-  types = this.types
+{$, $number, $function, $string, $object, types} = (if typeof window == 'undefined' then (require "./types").Types else this.Types)
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
