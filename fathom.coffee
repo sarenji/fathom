@@ -20,8 +20,8 @@ class Util
   # Return a vector representing movement.
   # TODO: Support up/down/left/right also.
   @movementVector: () ->
-    x = (Key.isDown(Key.D) - Key.isDown(Key.A))
-    y = (Key.isDown(Key.S) - Key.isDown(Key.W))
+    x = (Key.isDown(Key.Right) - Key.isDown(Key.Left))
+    y = (Key.isDown(Key.Down) - Key.isDown(Key.Up))
     new Vector(x, y)
 
 class Point
@@ -65,6 +65,11 @@ class Key
   @addKeys: ->
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     @[chr] = alphabet.charCodeAt i for chr, i in alphabet
+
+    @Left  = 37
+    @Up    = 38
+    @Right = 39
+    @Down  = 40
 
   @start: (addListeners=true) ->
     @addKeys()
@@ -110,8 +115,9 @@ class BasicHooks
   @rpgLike: (speed, object) =>
     types $number, $("Entity")
     () =>
-      object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
-      object.vy += (Key.isDown(Key.S) - Key.isDown(Key.W)) * speed
+      v = Util.movementVector().multiply(speed)
+      object.vx += v.x
+      object.vy += v.y
 
   # TODO: Pass in cutoff and decel.
   @decel: (object) =>
