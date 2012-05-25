@@ -215,13 +215,21 @@ class Entities
 
     remainingEntities
 
+  one: (criteria) ->
+    types $object
+
+    results = (@get criteria)
+    if results.length
+      results[0]
+    else
+      null
+
   # Returns true if there is at least 1 object that matches each criteria,
   # false otherwise.
   any: (criteria) ->
     types $object
-    assert -> typeof criteria == "object"
 
-    return (@get criteria).length > 0
+    (@get criteria).length > 0
 
   can: (decorator) ->
     decorator.call(this)
