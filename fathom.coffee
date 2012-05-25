@@ -26,6 +26,7 @@ class Util
 
 class Point
   constructor: (@x, @y) -> types $number, $number
+
   add: (v) ->
     types $("Vector")
     @x += v.x
@@ -132,32 +133,22 @@ class BasicHooks
       object.vx /= decel
       object.vy /= decel
 
-  @moveForward: (object, direction) =>
+  @move: (object, direction) =>
     types $("Entity"), $("Vector")
     () =>
-      object.x += direction.x
-      object.y += direction.y
+      object.add(direction)
 
   @onCollide: (object, entities, type, cb) =>
-    types $("Entity"), $("Entities"), $string
+    types $("Entity"), $("Entities"), $string, $function
     () =>
-      collisions = entities.any [type, (other) -> other.collides(object)]
+      collisions = entities.one [type, (other) -> other.collides(object)]
       if collisions
-        cb(collision)
+        cb(collisions)
 
   @onLeaveScreen: (object, screenWidth, screenHeight, cb) =>
     () =>
       if object.x <= 0 or object.y <= 0 or object.x >= screenWidth or object.y >= screenHeight
         cb.bind(object)()
-
-  @dieAtWall: (object, entities) =>
-    types $("Entity"), $("Entities")
-    () =>
-
-  @dieOffScreen: (object, screenWidth, screenHeight, entities) =>
-    types $("Entity"), $number, $number, $("Entities")
-    BasicHooks.onLeaveScreen object, screenWidth, screenHeight, ->
-      object.die(entities)
 
   @platformerLike: (speed, object, entities) =>
     types $number, $("Entity"), $("Entities")
@@ -167,7 +158,6 @@ class BasicHooks
     # Need to check if we're on the ground before we jump
     if Key.isDown(Key.W)
       onGround = entities.any [(other) -> other.collides(this)]
-      console.log onGround
       if onGround
         object.vy -= 50
 
