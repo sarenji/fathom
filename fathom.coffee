@@ -132,18 +132,25 @@ class BasicHooks
       object.x += direction.x
       object.y += direction.y
 
-  @dieAtWall: (object, entities) =>
-    types $("Entity"), $("Entities")
+  @onCollide: (object, entities, type, cb) =>
+    types $("Entity"), $("Entities"), $string
     () =>
+      collisions = entities.any [type, (other) -> other.collides(object)]
+      if collisions
+        cb(collision)
 
-  @leaveScreen: (object, screenWidth, screenHeight, cb) =>
+  @onLeaveScreen: (object, screenWidth, screenHeight, cb) =>
     () =>
       if object.x <= 0 or object.y <= 0 or object.x >= screenWidth or object.y >= screenHeight
         cb.bind(object)()
 
+  @dieAtWall: (object, entities) =>
+    types $("Entity"), $("Entities")
+    () =>
+
   @dieOffScreen: (object, screenWidth, screenHeight, entities) =>
     types $("Entity"), $number, $number, $("Entities")
-    BasicHooks.leaveScreen object, screenWidth, screenHeight, ->
+    BasicHooks.onLeaveScreen object, screenWidth, screenHeight, ->
       object.die(entities)
 
   @platformerLike: (speed, object, entities) =>
