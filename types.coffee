@@ -1,5 +1,4 @@
 # Type annotation for CoffeeScript/JavaScript.
-# TODO: Can probably be moved into some sort of metautil...
 
 getType = (someObj) ->
   funcNameRegex = /function (.+)\(/

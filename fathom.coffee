@@ -177,6 +177,10 @@ class Entities
     @entities = []
     @entityInfo = []
 
+  flush: ->
+    #TODO: I shouldn't have to use ?.
+    @entities = (e for e in @entities when not e?.__fathom?.dead)
+
   # Adds an entity.
   add: (entity) ->
     types $("Entity")
@@ -317,6 +321,7 @@ class Entity extends Rect
     @__fathom =
       uid    : getUniqueID()
       events : {}
+      dead   : false
 
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
@@ -351,9 +356,8 @@ class Entity extends Rect
     # Return the Entity object for easy chainability.
     this
 
-  die: (entities) ->
-    types $("Entities")
-    entities.removeEntity this
+  die: () ->
+    @.__fathom.dead = true
 
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
@@ -538,7 +542,7 @@ fixedInterval = (fn, fps=24) ->
 context = null # Graphics context for the game.
 temp_context = null # Context for temporary stuff i.e. reading pixel data (invisible).
 
-initialize = (gameLoop, canvasID) ->
+initialize = (gameLoop, entities, canvasID) ->
   ready () ->
     canv = document.createElement "canvas"
     canv.width = canv.height = 500
@@ -549,7 +553,11 @@ initialize = (gameLoop, canvasID) ->
     canv = document.getElementById canvasID
     context = canv.getContext('2d')
 
-    fixedInterval (() -> (gameLoop context))
+    wrappedLoop = () ->
+      entities.flush()
+      gameLoop context
+
+    fixedInterval wrappedLoop
 
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
