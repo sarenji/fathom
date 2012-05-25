@@ -280,9 +280,10 @@ class Game
 # Entities object, as things may change in the future.
 class State extends Entities
 
-class Rect
+class Rect extends Point
   constructor: (@x, @y, @size) ->
     #types $number, $number, $number TYPE TODO
+    super @x, @y
     @right = @x + @size
     @bottom = @y + @size
 
