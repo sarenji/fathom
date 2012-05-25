@@ -77,8 +77,8 @@ class Key
     @keysDown = (false for x in [0..255])
 
     if addListeners
-      document.onkeydown = (e) => @keysDown[@getCode e] = true
-      document.onkeyup = (e) => @keysDown[@getCode e] = false
+      document.onkeydown = (e) => @keysDown[@getCode e] = true; e.preventDefault()
+      document.onkeyup = (e) => @keysDown[@getCode e] = false; e.preventDefault()
 
   @isDown: (key) ->
     types $number
