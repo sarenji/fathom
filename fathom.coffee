@@ -367,7 +367,8 @@ class Entity extends Rect
 
   # Returns true if this collides with other, else false.
   collides: (other) ->
-    false
+    $("Entity")
+    @.__fathom.uid != other.__fathom.uid and @touchingRect other
 
   # Updates the Entity. Must be implemented in a subclass if it has group
   # "updateable".
