@@ -13,8 +13,6 @@ getSuperclasses = (obj) ->
     if not obj.__proto__
       break
     obj = obj.__proto__
-  
-  superclasses
 
 # slightly-better-than-js-typing
 

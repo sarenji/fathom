@@ -18,7 +18,7 @@ class Util
       0
 
   # Return a vector representing movement.
-  # TODO: Support up/down/left/right also.
+  # TODO: Support WASD also.
   @movementVector: () ->
     x = (Key.isDown(Key.Right) - Key.isDown(Key.Left))
     y = (Key.isDown(Key.Down) - Key.isDown(Key.Up))
@@ -57,7 +57,7 @@ class Vector
 
 class Key
   @getCode: (e) ->
-    types $('KeyboardEvent')
+    #types $('KeyboardEvent')
     if not e
       e = window.event
 
@@ -428,7 +428,6 @@ class Pixel
 
 loadImage = (loc, callback) ->
   img = document.createElement('img')
-  img.src = loc
   img.onload = () ->
     temp_context.drawImage(img, 0, 0)
     data = temp_context.getImageData(0, 0, img.width, img.height).data
@@ -440,6 +439,8 @@ loadImage = (loc, callback) ->
         pixels[y][x] = new Pixel(data[z], data[z+1], data[z+2], data[z+3])
 
     callback(pixels)
+
+  img.src = loc
 
 class Map extends Entity
   constructor: (@width, @height, @size) ->
