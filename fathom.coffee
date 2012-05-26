@@ -41,6 +41,11 @@ class Vector
     @y *= n
     this
 
+  add: (v) ->
+    @x += v.x
+    @y += v.y
+    this
+
   normalize: () ->
     mag = Math.sqrt(@x * @x + @y * @y)
     @x /= mag
