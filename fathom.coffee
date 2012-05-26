@@ -105,7 +105,7 @@ class Key
 # BasicHooks provides callbacks for simple arrow-key-based movement. We choose
 # to return callbacks because we get some nice convience with callback-related
 # hooks, especially `pre-update`. See Depths TODO for a good example of this.
-# 
+#
 # BasicHooks requires `object` to be of type StandardControllable. But that
 # type doesn't exist right now TODO and it's also a horrible name so I have to
 # rethink this. What it means until it does is that the controlled object must
@@ -124,6 +124,17 @@ class BasicHooks
       v = Util.movementVector().multiply(speed)
       object.vx += v.x
       object.vy += v.y
+
+      object.x += object.vx
+      if object.__fathom.entities.any [(other) => other.collides(object)]
+        object.x -= object.vx
+        object.vx = 0
+
+      object.y += object.vy
+      if object.__fathom.entities.any [(other) => other.collides(object)]
+        object.y -= object.vy
+        object.vy = 0
+
 
   # TODO: Pass in cutoff and decel.
   @decel: (object) =>
@@ -244,7 +255,7 @@ class Entities
     decorator.call(this)
 
   #TODO "Entity" here is redundant.
- 
+
   removeEntities: (groups) ->
     assert -> false #TODO: unimplemented.
 
