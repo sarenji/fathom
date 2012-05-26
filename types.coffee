@@ -14,6 +14,8 @@ getSuperclasses = (obj) ->
       break
     obj = obj.__proto__
 
+  superclasses
+
 # slightly-better-than-js-typing
 
 OUTER_ONLY = 0
