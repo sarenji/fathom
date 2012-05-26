@@ -138,10 +138,10 @@ class BasicHooks
     () =>
       object.add(direction)
 
-  @onCollide: (object, entities, type, cb) =>
-    types $("Entity"), $("Entities"), $string, $function
+  @onCollide: (object, type, cb) =>
+    types $("Entity"), $string, $function
     () =>
-      collisions = entities.one [type, (other) -> other.collides(object)]
+      collisions = object.__fathom.entities.one [type, (other) -> other.collides(object)]
       if collisions
         cb(collisions)
 
@@ -150,14 +150,14 @@ class BasicHooks
       if object.x <= 0 or object.y <= 0 or object.x >= screenWidth or object.y >= screenHeight
         cb.bind(object)()
 
-  @platformerLike: (speed, object, entities) =>
+  @platformerLike: (speed, object) =>
     types $number, $("Entity"), $("Entities")
     object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
     object.vy += 5
 
     # Need to check if we're on the ground before we jump
     if Key.isDown(Key.W)
-      onGround = entities.any [(other) -> other.collides(this)]
+      onGround = object.__fathom.entities.any [(other) -> other.collides(this)]
       if onGround
         object.vy -= 50
 
@@ -238,6 +238,8 @@ class Entities
   can: (decorator) ->
     decorator.call(this)
 
+  #TODO "Entity" here is redundant.
+ 
   removeEntities: (groups) ->
     assert -> false #TODO: unimplemented.
 
@@ -270,6 +272,8 @@ class Entities
       entity.emit "pre-update"
       entity.update entities
       entity.emit "post-update"
+
+entities = new Entities
 
 class Game
   @currentState = null
@@ -319,9 +323,10 @@ class Entity extends Rect
     super
 
     @__fathom =
-      uid    : getUniqueID()
-      events : {}
-      dead   : false
+      uid      : getUniqueID()
+      events   : {}
+      entities : entities
+    entities.add @
 
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
@@ -357,7 +362,7 @@ class Entity extends Rect
     this
 
   die: () ->
-    @.__fathom.dead = true
+    @.__fathom.entities.removeEntity @
 
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
@@ -376,7 +381,7 @@ class Entity extends Rect
 
   # Updates the Entity. Must be implemented in a subclass if it has group
   # "updateable".
-  update: (entities) ->
+  update: () ->
     throw "NotImplementedException"
 
   # Returns the depth at which the Entity will be rendered (like Z-Ordering).
@@ -507,7 +512,7 @@ class TextBox extends Text
 
   groups: -> ["renderable", "updateable"]
 
-  update: (entities) ->
+  update: () ->
     # split text into chunks
     words         = @text.split(' ')
     phrases       = []
@@ -542,7 +547,7 @@ fixedInterval = (fn, fps=24) ->
 context = null # Graphics context for the game.
 temp_context = null # Context for temporary stuff i.e. reading pixel data (invisible).
 
-initialize = (gameLoop, entities, canvasID) ->
+initialize = (gameLoop, canvasID) ->
   ready () ->
     canv = document.createElement "canvas"
     canv.width = canv.height = 500
@@ -554,8 +559,9 @@ initialize = (gameLoop, entities, canvasID) ->
     context = canv.getContext('2d')
 
     wrappedLoop = () ->
-      entities.flush()
       gameLoop context
+      entities.update entities
+      entities.render context
 
     fixedInterval wrappedLoop
 
