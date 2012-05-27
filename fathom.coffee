@@ -28,7 +28,10 @@ class Util
     Math.abs(a - b) < threshold
 
 class Point
-  constructor: (@x=0, @y=0) -> types $number, $number
+  constructor: (@x=0, @y=0) -> #types $number, $number
+
+  toRect: (size) ->
+    new Rect(@x, @y, size)
 
   point: () ->
     new Point(@x, @y)
@@ -55,7 +58,7 @@ class Point
     return new Vector(@x-p.x, @y-p.y)
 
 class Vector
-  constructor: (@x=0, @y=0) -> types $number, $number
+  constructor: (@x=0, @y=0) ->
 
   randomize: () ->
     r = Math.floor(Math.random() * 4)
@@ -274,8 +277,6 @@ class Entities
   # Returns true if there is at least 1 object that matches each criteria,
   # false otherwise.
   any: (criteria...) ->
-    types $object
-
     (@get criteria...).length > 0
 
   can: (decorator) ->
@@ -514,7 +515,7 @@ class Map extends Entity
     ["renderable", "wall", "map"]
 
   collides: (other) ->
-    types $('Entity')
+    types $('Rect')
     #TODO insanely inefficient.
     for x in [0...@width]
       for y in [0...@height]
@@ -535,7 +536,7 @@ class StaticImage extends Entity
 
 class Text extends Entity
   constructor: (@text, x=0, y=0, opts={}) ->
-    types $string, $number, $number, $object
+    #types $string, $number, $number, $object
     super x, y
     @color    = opts.color    || "#000000"
     @baseline = opts.baseline || "top"

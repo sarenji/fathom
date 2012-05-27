@@ -49,6 +49,7 @@ $array = (type) ->
       "array(#{type(EVERYTHING)})"
 
 types = (typeList...) ->
+
   # Ascend the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments
 
