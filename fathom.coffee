@@ -368,6 +368,10 @@ class Entity extends Rect
       entities : entities
     entities.add @
 
+  # This will eventually be removed.
+  entities: ->
+    @__fathom.entities
+
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
   on: (event, callback) ->
