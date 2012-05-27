@@ -6,10 +6,10 @@ describe 'Number types', ->
     x + y
 
   it 'Typechecks simple types.', ->
-    (() -> adder 1, 2).should.throw
+    (() -> adder 1, 2).should.not.throw
 
   it 'Can fail', ->
-    (() -> adder "a", "b").should.not.throw
+    (() -> adder "a", "b").should.throw
 
 describe 'Other simple types', ->
   simple = (str, obj) ->
@@ -114,5 +114,3 @@ describe 'Argument list length', ->
   it 'Validates argument length.', -> (() -> innocentFunction(1,1,1)).should.not.throw
   it 'Validates incorrect argument length.', -> (() -> innocentFunction(1,1,1,4)).should.throw
   it 'Validates incorrect argument length.', -> (() -> innocentFunction(1,1)).should.throw
-
-

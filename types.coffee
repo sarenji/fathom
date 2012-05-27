@@ -61,10 +61,12 @@ types = (typeList...) ->
 
   if args.length != typeList.length
     console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{types.caller}"
+    console.trace()
     throw "ArgumentCountError"
 
   checkType = (type_given, object) ->
     if typeof object == "undefined"
+      console.trace()
       throw "YouUsedUndefinedYouMoronError"
 
     if typeof type_given == "string"
