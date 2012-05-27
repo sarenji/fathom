@@ -24,7 +24,7 @@ class Util
     y = (Key.isDown(Key.Down) - Key.isDown(Key.Up))
     new Vector(x, y)
 
-  @epsilon_eq = (a, b, threshold) ->
+  @epsilonEq = (a, b, threshold) ->
     Math.abs(a - b) < threshold
 
 class Point
@@ -38,11 +38,11 @@ class Point
 
   eq: (p) ->
     types $("Point")
-    Util.epsilon_eq(@x, p.x) and Util.epsilon_eq(@y, p.y)
+    Util.epsilonEq(@x, p.x) and Util.epsilonEq(@y, p.y)
 
   close: (p, threshold=1) ->
     types $("Point")
-    Util.epsilon_eq(@x, p.x, threshold) and Util.epsilon_eq(@y, p.y, threshold)
+    Util.epsilonEq(@x, p.x, threshold) and Util.epsilonEq(@y, p.y, threshold)
 
   add: (v) ->
     types $("Vector")
