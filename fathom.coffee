@@ -313,13 +313,6 @@ class Entities
 
 entities = new Entities
 
-class Game
-  @currentState = null
-  @switchState = (state) ->
-    @currentState.emit "switch off" if @currentState?
-    @currentState = state
-    @currentState.emit "switch on"
-
 class Rect extends Point
   constructor: (@x, @y, @size) ->
     #types $number, $number, $number TYPE TODO
