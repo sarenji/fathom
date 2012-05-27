@@ -1,6 +1,6 @@
 # Fathom
 
-Fathom is a speedy, sexy JS/CoffeeScript game development library. 
+Fathom is a speedy, sexy JS/CoffeeScript game development library.
 
 ## Checkout
 
@@ -36,6 +36,4 @@ Then open `depths/index.html` in your favorite web browser. Bam! Game.
 
 ## Tests
 
-Run all test suites via `cake test`.
-
-Run tests continuously via `cake autotest`.
+Run all test suites via `npm test` or `mocha`.
