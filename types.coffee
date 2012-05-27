@@ -29,6 +29,7 @@ NEXT_FUNCTION = 2
 #TODO: Heterogenous tuples.
 #TODO: Rewrite this whole thing.
 $string = (type = EVERYTHING) -> "string"
+$boolean = (type = EVERYTHING) -> "boolean"
 $number = (type = EVERYTHING) -> "number"
 $object = (type = EVERYTHING) -> "object"
 $function = (type = EVERYTHING) -> "function" #doing better function types seems very hard.
@@ -104,6 +105,9 @@ types = (typeList...) ->
       when "string"
         if typeof object != "string"
           throwError type_given(true), typeof object
+      when "boolean"
+        if typeof object != "boolean"
+          throwError type_given(true), typeof object
       when "number"
         if typeof object != "number"
           throwError type_given(true), typeof object
@@ -132,4 +136,4 @@ types = (typeList...) ->
 #Types = {$number: $number, $string: $string, $object: $object, $: $, $array: $array, types: types}
 
 exports = (module?.exports or this)
-exports.Types = {$ : $, $optional: $optional, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}
+exports.Types = {$ : $, $boolean: $boolean, $optional: $optional, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}
