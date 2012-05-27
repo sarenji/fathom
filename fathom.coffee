@@ -213,7 +213,7 @@ class BasicHooks
 
 assert = (fn) ->
   if not fn()
-    throw "AssertionError"
+    throw new Error("AssertionError")
 
 uniqueID = 0
 
@@ -261,7 +261,7 @@ class Entities
             if item entity
               pass.push entity
           else
-            throw "UnsupportedCriteriaType #{typeof item}"
+            throw new Error("UnsupportedCriteriaType #{typeof item}")
 
       remainingEntities = pass
 
@@ -415,12 +415,12 @@ class Entity extends Rect
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
   groups: () ->
-    throw "NotImplementedException"
+    throw new Error("NotImplementedException")
 
   # Renders the Entity. Must be implemented in a subclass if it has group
   # "renderable".
   render: (context) ->
-    throw "NotImplementedException"
+    throw new Error("NotImplementedException")
 
   # Returns true if this collides with other, else false.
   collides: (other) ->
@@ -430,7 +430,7 @@ class Entity extends Rect
   # Updates the Entity. Must be implemented in a subclass if it has group
   # "updateable".
   update: () ->
-    throw "NotImplementedException"
+    throw new Error("NotImplementedException")
 
   # Returns the depth at which the Entity will be rendered (like Z-Ordering).
   # Can be reimplemented in a subclass.

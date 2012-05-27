@@ -57,17 +57,17 @@ types = (typeList...) ->
     err = "TypeError: got #{received}, expected #{expected} in #{types.caller}"
 
     console.log err
-    throw "TypeError"
+    throw new Error("TypeError")
 
   if args.length != typeList.length
     console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{types.caller}"
     console.trace()
-    throw "ArgumentCountError"
+    throw new Error("ArgumentCountError")
 
   checkType = (type_given, object) ->
     if typeof object == "undefined"
       console.trace()
-      throw "YouUsedUndefinedYouMoronError"
+      throw new Error("YouUsedUndefinedYouMoronError")
 
     if typeof type_given == "string"
       good = getType(object) == type_given
@@ -98,7 +98,7 @@ types = (typeList...) ->
         if not good
           throwError "user type: #{type_given(EVERYTHING)}", getType(object)
       else
-        throw "unknown type #{type_given(OUTER_ONLY)}"
+        throw new Error("unknown type #{type_given(OUTER_ONLY)}")
 
     true
 
