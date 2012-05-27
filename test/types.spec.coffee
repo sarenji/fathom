@@ -54,10 +54,10 @@ describe 'Arrays', ->
 
 describe 'User types', ->
   class Point
-    constructor : (@x, @y) ->
+    constructor: (@x, @y) ->
 
   class ColorPoint
-    constructor (@x, @y, @color) ->
+    constructor: (@x, @y, @color) ->
 
   addpoint = (pt1, pt2) ->
     Types.types Types.$("Point"), Types.$("Point")
