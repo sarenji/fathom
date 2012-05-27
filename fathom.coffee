@@ -387,7 +387,10 @@ class Entity extends Rect
       else
        throw new Error("Entity#off called on an event that the entity did not have.")
     else if event
-      delete @__fathom.events[event]
+      if @__fathom.events[event]
+        delete @__fathom.events[event]
+      else
+        throw new Error("Entity#off called on an event that the entity did not have.")
 
     # Return the Entity object for easy chainability.
     this
