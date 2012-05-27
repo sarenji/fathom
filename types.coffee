@@ -73,9 +73,9 @@ validateArgumentCount = (given, expected) ->
 
   if not (lowCount <= given.length <= highCount)
     if lowCount == highCount
-      console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{types.caller}"
+      console.log "Incorrect number of arguments. Got #{given.length}, expected #{expected.length} in #{types.caller}"
     else
-      console.log "Incorrect number of arguments. Got #{args.length}, expected #{lowCount} to #{highCount} in #{types.caller}"
+      console.log "Incorrect number of arguments. Got #{given.length}, expected #{lowCount} to #{highCount} in #{types.caller}"
 
     console.trace()
     throw new Error("ArgumentCountError")
