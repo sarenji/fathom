@@ -226,10 +226,6 @@ class Entities
     @entities = []
     @entityInfo = []
 
-  flush: ->
-    #TODO: I shouldn't have to use ?.
-    @entities = (e for e in @entities when not e?.__fathom?.dead)
-
   # Adds an entity.
   add: (entity) ->
     types $("Entity")
@@ -243,7 +239,6 @@ class Entities
   # true.
   # * If you pass in anything else, an error will be raised.
 
-  #TODO: "criteria...". No reason to require it to be an array.
   get: (criteria...) ->
     #types $object #todo: not as strict as it could be
     #assert -> typeof criteria == "object"
@@ -282,12 +277,7 @@ class Entities
   can: (decorator) ->
     decorator.call(this)
 
-  #TODO "Entity" here is redundant.
-
-  removeEntities: (groups) ->
-    assert -> false #TODO: unimplemented.
-
-  removeEntity: (entity) ->
+  remove: (entity) ->
     uid = entity.__fathom.uid
     @entities = (e for e in @entities when e.__fathom.uid != uid)
 
@@ -394,6 +384,8 @@ class Entity extends Rect
       if @__fathom.events[event]
         @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
         delete @__fathom.events[event] if @__fathom.events[event].length == 0
+      else
+       throw "Entity#off called on an event that the entity did not have."
     else if event
       delete @__fathom.events[event]
 
@@ -410,7 +402,7 @@ class Entity extends Rect
     this
 
   die: () ->
-    @.__fathom.entities.removeEntity @
+    @.__fathom.entities.remove @
 
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
