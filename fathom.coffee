@@ -442,13 +442,13 @@ class Tile extends Rect
     super(@x, @y, @width)
     types $number, $number, $number, $number
 
-  render: (context) ->
+  render: (context, dx, dy) ->
     if @type == 0
       context.fillStyle = "#f00"
     else if @type == 1
       context.fillStyle = "#ff0"
 
-    context.fillRect @x, @y, @width, @height
+    context.fillRect @x + dx, @y + dy, @width, @height
 
 
 # Generic health bar
@@ -565,9 +565,9 @@ class Map extends Entity
     return false
 
   render: (context) ->
-    for x in [0...@width]
-      for y in [0...@height]
-        @tiles[x][y].render context
+    for tileX in [0...@width]
+      for tileY in [0...@height]
+        @tiles[tileX][tileY].render context, @x, @y
 
 class StaticImage extends Entity
   constructor: (source, destination) ->
@@ -593,6 +593,24 @@ class Text extends Entity
     context.fillText @text, @x, @y
   depth: -> 2
   collides: -> false
+
+class Camera extends Rect
+  constructor: (args...) -> super(args...)
+
+  move: (x, y) ->
+    @x = x
+    @y = y
+
+  render: (entities, context) ->
+    for e in entities.get()
+      e.x -= @x
+      e.y -= @y
+
+    entities.render context
+
+    for e in entities.get()
+      e.x += @x
+      e.y += @y
 
 class TextBox extends Text
   constructor: (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
@@ -654,9 +672,14 @@ getFPS.fps = 0
 
 initialize = (gameLoop, canvasID) ->
   types $function, $string
+  window_size = 500 #TODO
+
+  c = new Camera(0, 0, window_size, window_size)
+  c.move -50, -50
+
   ready () ->
     canv = document.createElement "canvas"
-    canv.width = canv.height = 500
+    canv.width = canv.height = window_size
     temp_context = canv.getContext('2d')
 
     Key.start()
@@ -667,7 +690,8 @@ initialize = (gameLoop, canvasID) ->
     wrappedLoop = () ->
       gameLoop context
       entities.update entities
-      entities.render context
+      c.render entities, context
+      #entities.render context
 
     fixedInterval wrappedLoop
 
