@@ -24,6 +24,9 @@ class Util
     y = (Key.isDown(Key.Down) - Key.isDown(Key.Up))
     new Vector(x, y)
 
+  @epsilon_eq = (a, b, threshold) ->
+    Math.abs(a - b) < threshold
+
 class Point
   constructor: (@x, @y) -> types $number, $number
 
