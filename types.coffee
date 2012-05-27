@@ -64,24 +64,28 @@ throwError = (expected, received) ->
   console.log err
   throw new Error("TypeError")
 
-validArgumentCount = (given, expected) ->
+validateArgumentCount = (given, expected) ->
   lowCount = 0
   highCount = 0
   for type in expected
     highCount++
     lowCount++  if type(OUTER_ONLY) != "optional"
 
-  return lowCount <= given.length <= highCount
+  if not (lowCount <= given.length <= highCount)
+    if lowCount == highCount
+      console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{types.caller}"
+    else
+      console.log "Incorrect number of arguments. Got #{args.length}, expected #{lowCount} to #{highCount} in #{types.caller}"
+
+    console.trace()
+    throw new Error("ArgumentCountError")
 
 types = (typeList...) ->
 
   # Ascend the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments
 
-  if not validArgumentCount(args, typeList)
-    console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{types.caller}"
-    console.trace()
-    throw new Error("ArgumentCountError")
+  validateArgumentCount(args, typeList)
 
   # Replace all optional types in the type list with their non-optional
   # counterpart. Since we've ensured that the number of passed in arguments is
