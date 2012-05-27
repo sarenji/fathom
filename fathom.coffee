@@ -594,21 +594,26 @@ class Text extends Entity
   depth: -> 2
   collides: -> false
 
-class Camera extends Rect
-  constructor: (args...) -> super(args...)
+class Camera extends Entity
+  constructor: (args...) ->
+    @dontAdjust = true
+    super(args...)
 
   move: (x, y) ->
     @x = x
     @y = y
 
-  render: (entities, context) ->
-    for e in entities.get()
+  groups: -> ["camera"]
+  collides: -> false
+
+  render: (entities, context, fn) ->
+    for e in entities.get() when not e.dontAdjust
       e.x -= @x
       e.y -= @y
 
     entities.render context
 
-    for e in entities.get()
+    for e in entities.get() when not e.dontAdjust
       e.x += @x
       e.y += @y
 
@@ -674,9 +679,6 @@ initialize = (gameLoop, canvasID) ->
   types $function, $string
   window_size = 500 #TODO
 
-  c = new Camera(0, 0, window_size, window_size)
-  c.move -50, -50
-
   ready () ->
     canv = document.createElement "canvas"
     canv.width = canv.height = window_size
@@ -687,11 +689,20 @@ initialize = (gameLoop, canvasID) ->
     canv = document.getElementById canvasID
     context = canv.getContext('2d')
 
+    cam = entities.get "camera"
+    if cam.length > 1
+      throw new Error("More than one camera.") #TODO: Camera#enable, Camera#disable
+    if cam.length == 1
+      cam = cam[0]
+
+
     wrappedLoop = () ->
       gameLoop context
       entities.update entities
-      c.render entities, context
-      #entities.render context
+      if cam
+        cam.render entities, context
+      else
+        entities.render context
 
     fixedInterval wrappedLoop
 
@@ -702,6 +713,7 @@ exports.Fathom =
   Key        : Key
   Entity     : Entity
   Entities   : Entities
+  Camera     : Camera
   BasicHooks : BasicHooks
   Text       : Text
   Rect       : Rect
