@@ -142,19 +142,16 @@ class Key
   @flush: ->
     @start(false)
 
-# BasicHooks provides callbacks for simple arrow-key-based movement. We choose
-# to return callbacks because we get some nice convience with callback-related
-# hooks, especially `pre-update`. See Depths TODO for a good example of this.
-#
 # BasicHooks requires `object` to be of type StandardControllable. But that
 # type doesn't exist right now TODO and it's also a horrible name so I have to
 # rethink this. What it means until it does is that the controlled object must
 # have a vx and a vy.
 class BasicHooks
-  #TODO: When/if I understand coffeescript better: I should be able to not have
-  #the user pass in object; it'll always be this, so I should just be able to
-  #bind with the fat arrow. But that doesn't seem to work here. Can't figure
-  #out why.
+  #TODO: These function should be called with this bound to the caller.
+
+  @stickTo: (sticker, object, dx=0, dy=0) ->
+    () ->
+      sticker.setPosition(object.clone().add(new Vector(dx, dy)))
 
   # TODO: More customization.
   # TODO: Nice accelerating controls too, perhaps.
