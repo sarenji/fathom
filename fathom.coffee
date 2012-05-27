@@ -39,8 +39,9 @@ class Point
   clone: () ->
     new Point @x, @y
 
-  toRect: (size) ->
-    new Rect(@x, @y, size)
+  toRect: (width, height=width) ->
+    types $number, $optional $number
+    new Rect(@x, @y, width, height)
 
   point: () ->
     new Point(@x, @y)
@@ -70,6 +71,10 @@ class Point
 class Vector
   constructor: (@x=0, @y=0) ->
     types $optional($number), $optional($number)
+
+  eq: (v) ->
+    types $("Vector")
+    @x == v.x and @y == v.y
 
   randomize: () ->
     r = Math.floor(Math.random() * 4)
@@ -320,24 +325,24 @@ class Entities
 entities = new Entities
 
 class Rect extends Point
-  constructor: (@x, @y, @size) ->
-    #types $number, $number, $number TYPE TODO
+  constructor: (@x, @y, @width, @height=@width) ->
+    types $number, $number, $number, $optional($number)
     super @x, @y
-    @right = @x + @size
-    @bottom = @y + @size
+    @right = @x + @width
+    @bottom = @y + @height
 
   # Returns true if the current rect touches rect `rect`.
   touchingRect: (rect) ->
     types $("Rect")
-    not (other.x              > @x + @size or
-         other.x + other.size < @x         or
-         other.y              > @y + @size or
-         other.y + other.size < @y       )
+    not (rect.x                > @x + @width  or
+         rect.x + rect.width  < @x           or
+         rect.y                > @y + @height or
+         rect.y + rect.height < @y           )
 
   # Returns true if this rect contains point `point`.
   touchingPoint: (point) ->
     types $("Point")
-    @x <= point.x <= @x + @size and @y <= point.y <= @y + @size
+    @x <= point.x <= @x + @width and @y <= point.y <= @y + @height
 
 # Entity
 # ------
@@ -349,9 +354,10 @@ class Rect extends Point
 # and a callback. These callbacks are called by the `.emit` method,
 # which takes an event name.
 class Entity extends Rect
-  constructor: (x = 0, y = 0, size = 20) ->
-    #types $number, $number, $number
-    super
+  constructor: (@x = 0, @y = 0, @width = 20, @height = @width) ->
+    types $optional($number), $optional($number), $optional($number), $optional($number)
+
+    super(@x, @y, @width, @height)
 
     @__fathom =
       uid      : getUniqueID()
@@ -432,9 +438,9 @@ class Entity extends Rect
     0
 
 class Tile extends Rect
-  constructor: (@x, @y, @size, @type) ->
+  constructor: (@x, @y, @width, @type) ->
+    super(@x, @y, @width)
     types $number, $number, $number, $number
-    super(@x, @y, @size)
 
   render: (context) ->
     if @type == 0
@@ -458,9 +464,8 @@ class Bar extends Entity
     @amt = 50
     @total = 100
 
-    super @x, @y, @height # TODO: passing in the size really has no meaning here.
-                          # i guess that we want @width=@height=@size as a default but not
-                          # as a requirement.
+    super @x, @y, @width, @height
+
   groups: -> ["renderable", "updateable", "bar"]
   collides: -> false
   update: ->
@@ -482,6 +487,7 @@ class Bar extends Entity
 class FollowBar extends Bar
   constructor: (@follow, rest...) ->
     super(rest...)
+
     @on "pre-update", Fathom.BasicHooks.stickTo(@, @follow, 0, -10)
 
 class Pixel
@@ -509,7 +515,7 @@ loadImage = (loc, callback) ->
 class Map extends Entity
   constructor: (@width, @height, @size) ->
     types $number, $number, $number
-    super 0, 0, @size
+    super 0, 0, @size, @size
 
     @tiles = ((null for b in [0...height]) for a in [0...width])
     @data = undefined
@@ -517,7 +523,7 @@ class Map extends Entity
 
   setTile: (x, y, type) =>
     types $number, $number, $number
-    @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
+    @tiles[x][y] = new Tile(x * @width, y * @height, @width, type)
 
   # Set the top right corner of the visible map.
   # TODO: This has a bad name. TODO and now it's even worse because it's a delta.
