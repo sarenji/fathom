@@ -90,6 +90,12 @@ class Vector
     @y *= n
     this
 
+  divide: (n) ->
+    types $number
+    @x /= n
+    @y /= n
+    this
+
   add: (v) ->
     types $("Vector")
     @x += v.x
@@ -159,10 +165,14 @@ class Key
 # have a vx and a vy.
 class BasicHooks
   #TODO: These function should be called with this bound to the caller.
-
   @stickTo: (sticker, object, dx=0, dy=0) ->
     () ->
       sticker.setPosition(object.clone().add(new Vector(dx, dy)))
+
+  # Eases `slider` to the location of `object`
+  @slideTo: (slider, object, speed=20) ->
+    () ->
+      slider.add(object.subtract(slider).divide(speed))
 
   # TODO: More customization.
   # TODO: Nice accelerating controls too, perhaps.
@@ -487,7 +497,6 @@ class Bar extends Entity
 class FollowBar extends Bar
   constructor: (@follow, rest...) ->
     super(rest...)
-
     @on "pre-update", Fathom.BasicHooks.stickTo(@, @follow, 0, -10)
 
 class Pixel
@@ -617,6 +626,11 @@ class Camera extends Entity
       e.x += @x
       e.y += @y
 
+class FollowCam extends Camera
+  constructor: (@follow, rest...) -> super(rest...)
+  update: -> Fathom.BasicHooks.slideTo(@, new Point(@follow.x - 200, @follow.y - 200))()
+  groups: -> ["camera", "updateable"]
+
 class TextBox extends Text
   constructor: (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
     types $string, $number, $number, $optional($number), $optional($number), $optional($object)
@@ -714,6 +728,7 @@ exports.Fathom =
   Entity     : Entity
   Entities   : Entities
   Camera     : Camera
+  FollowCam  : FollowCam
   BasicHooks : BasicHooks
   Text       : Text
   Rect       : Rect
