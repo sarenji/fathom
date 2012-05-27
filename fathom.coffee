@@ -449,6 +449,44 @@ class Tile extends Rect
 
     context.fillRect @x, @y, @size, @size
 
+
+# Generic health bar
+
+class Bar extends Entity
+  constructor: (@x, @y, @width=50, @fillColor="#0f0", @emptyColor="#f00") ->
+    @borderColor = "#000"
+    @borderWidth = 1
+    @height = 10
+
+    @amt = 50
+    @total = 100
+
+    super @x, @y, @height # TODO: passing in the size really has no meaning here.
+                          # i guess that we want @width=@height=@size as a default but not
+                          # as a requirement.
+  groups: -> ["renderable", "updateable", "bar"]
+  collides: -> false
+  update: ->
+
+  render: (context) ->
+    # fill border
+    context.fillStyle = @borderColor
+    context.fillRect @x, @y, @width, @height
+
+    # fill empty color
+    context.fillStyle = @emptyColor
+    context.fillRect @x + @borderWidth, @y + @borderWidth, @width - @borderWidth * 2, @height - @borderWidth * 2
+
+    coloredWidth = (@amt / @total) * (@width - 2)
+    # fill full color
+    context.fillStyle = @fillColor
+    context.fillRect @x + @borderWidth, @y + @borderWidth, coloredWidth, @height - @borderWidth * 2
+
+class FollowBar extends Bar
+  constructor: (@follow, rest...) ->
+    super(rest...)
+    @on "pre-update", Fathom.BasicHooks.stickTo(@, @follow, 0, -10)
+
 class Pixel
   constructor: (@r, @g, @b, @a) -> types $number, $number, $number, $number
   eq: (p) ->
@@ -636,6 +674,8 @@ exports.Fathom =
   BasicHooks : BasicHooks
   Text       : Text
   Rect       : Rect
+  Bar        : Bar
+  FollowBar  : FollowBar
   TextBox    : TextBox
   Map        : Map
   Point      : Point
