@@ -1,4 +1,4 @@
-{$, $number, $function, $string, $object, types} = (if typeof window == 'undefined' then (require "./types").Types else this.Types)
+{$, $optional, $boolean, $optional, $number, $function, $string, $object, types} = (if typeof window == 'undefined' then (require "./types").Types else this.Types)
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
@@ -28,9 +28,11 @@ class Util
     Math.abs(a - b) < threshold
 
 class Point
-  constructor: (@x=0, @y=0) -> #types $number, $number
+  constructor: (@x=0, @y=0) ->
+    types $optional($number), $optional($number)
 
   setPosition: (p) ->
+    types $("Point")
     @x = p.x
     @y = p.y
 
@@ -48,7 +50,7 @@ class Point
     Util.epsilonEq(@x, p.x) and Util.epsilonEq(@y, p.y)
 
   close: (p, threshold=1) ->
-    types $("Point")
+    types $("Point"), $optional($number)
     Util.epsilonEq(@x, p.x, threshold) and Util.epsilonEq(@y, p.y, threshold)
 
   add: (v) ->
@@ -58,6 +60,7 @@ class Point
     this
 
   offscreen: (screen) ->
+    types $("Rect")
     not screen.touchingPoint @
 
   subtract: (p) ->
@@ -66,6 +69,7 @@ class Point
 
 class Vector
   constructor: (@x=0, @y=0) ->
+    types $optional($number), $optional($number)
 
   randomize: () ->
     r = Math.floor(Math.random() * 4)
@@ -82,6 +86,7 @@ class Vector
     this
 
   add: (v) ->
+    types $("Vector")
     @x += v.x
     @y += v.y
     this
@@ -118,6 +123,7 @@ class Key
     @Down  = 40
 
   @start: (addListeners=true) ->
+    types $optional($boolean)
     @addKeys()
 
     @keysDown = (false for x in [0..255])
@@ -320,8 +326,8 @@ class Rect extends Point
     @right = @x + @size
     @bottom = @y + @size
 
-  # Returns true if the current rect touches rect `other`.
-  touchingRect: (other) ->
+  # Returns true if the current rect touches rect `rect`.
+  touchingRect: (rect) ->
     types $("Rect")
     not (other.x              > @x + @size or
          other.x + other.size < @x         or
@@ -360,6 +366,7 @@ class Entity extends Rect
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
   on: (event, callback) ->
+    types $string, $function
     @__fathom.events[event] = chain = @__fathom.events[event] or []
     chain.push(callback) unless callback in chain
 
@@ -370,6 +377,7 @@ class Entity extends Rect
   # Fails silently if no callback was found. If no `callback` is
   # provided, all callbacks attached to an event are removed.
   off: (event, callback = null) ->
+    types $string, $optional($function)
     #TODO: I don't like how this is a non-noisy failure.
     if callback
       if @__fathom.events[event]
@@ -434,13 +442,15 @@ class Tile extends Rect
     else if @type == 1
       context.fillStyle = "#ff0"
 
-    context.fillRect @x, @y, @size, @size
+    context.fillRect @x, @y, @width, @height
 
 
 # Generic health bar
 
 class Bar extends Entity
   constructor: (@x, @y, @width=50, @fillColor="#0f0", @emptyColor="#f00") ->
+    types $number, $number, $optional($number), $optional($string), $optional($string)
+
     @borderColor = "#000"
     @borderWidth = 1
     @height = 10
@@ -560,7 +570,7 @@ class StaticImage extends Entity
 
 class Text extends Entity
   constructor: (@text, x=0, y=0, opts={}) ->
-    #types $string, $number, $number, $object
+    types $string, $optional($number), $optional($number), $optional($object)
     super x, y
     @color    = opts.color    || "#000000"
     @baseline = opts.baseline || "top"
@@ -576,9 +586,11 @@ class Text extends Entity
   render: (context) ->
     context.fillText @text, @x, @y
   depth: -> 2
+  collides: -> false
 
 class TextBox extends Text
   constructor: (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
+    types $string, $number, $number, $optional($number), $optional($number), $optional($object)
     super text, x, y, opts
 
   groups: -> ["renderable", "updateable"]
@@ -609,10 +621,12 @@ class TextBox extends Text
 
 # To start Fathom, document.body must exist.
 ready = (callback) ->
+  types $function
   if document.body then callback() else setTimeout (-> ready callback), 250
 
 # TODO: This implementation is not complete.
 fixedInterval = (fn, fps=24) ->
+  types $function, $optional($number)
   setInterval fn, 1000/fps
 
 context = null # Graphics context for the game.
@@ -633,6 +647,7 @@ getFPS.lastUpdate = +new Date()
 getFPS.fps = 0
 
 initialize = (gameLoop, canvasID) ->
+  types $function, $string
   ready () ->
     canv = document.createElement "canvas"
     canv.width = canv.height = 500
@@ -653,7 +668,6 @@ initialize = (gameLoop, canvasID) ->
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
 exports.Fathom =
-  Game       : Game
   Util       : Util
   Key        : Key
   Entity     : Entity
