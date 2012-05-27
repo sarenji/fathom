@@ -57,7 +57,7 @@ describe 'User types', ->
     constructor : (@x, @y) ->
 
   class ColorPoint
-    constructor (@x, @y, @color) ->
+    constructor : (@x, @y, @color) ->
 
   addpoint = (pt1, pt2) ->
     Types.types Types.$("Point"), Types.$("Point")
@@ -76,10 +76,10 @@ describe 'User types with subtype relations', ->
     constructor : (@x, @y) ->
 
   class SuperPoint extends Point
-    constructor (@x, @y, @z) ->
+    constructor : (@x, @y, @z) ->
 
   class HyperPoint extends SuperPoint
-    constructor (@x, @y, @z, @q) ->
+    constructor : (@x, @y, @z, @q) ->
 
   general = (p1) -> Types.types Types.$("Point")
   specific = (p1) -> Types.types Types.$("SuperPoint")
@@ -95,7 +95,7 @@ describe 'Arrays and subtypes', ->
     constructor : (@x, @y) ->
 
   class SuperPoint extends Point
-    constructor (@x, @y, @z) ->
+    constructor : (@x, @y, @z) ->
 
   general = (p) -> Types.types Types.$array(Types.$("Point"))
   specific = (p) -> Types.types Types.$array(Types.$("SuperPoint"))
