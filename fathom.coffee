@@ -592,6 +592,20 @@ fixedInterval = (fn, fps=24) ->
 context = null # Graphics context for the game.
 temp_context = null # Context for temporary stuff i.e. reading pixel data (invisible).
 
+# Returns an estimate of the FPS (strictly: the number of times this function
+# has been called per second). Will return null the first time.
+getFPS = () ->
+  now = +new Date()
+  thisFrameFPS = 1000 / (now - getFPS.lastUpdate)
+
+  getFPS.fps += (thisFrameFPS - getFPS.fps) / getFPS.fpsFilter
+  getFPS.lastUpdate = now
+  getFPS.fps
+
+getFPS.fpsFilter = 20
+getFPS.lastUpdate = +new Date()
+getFPS.fps = 0
+
 initialize = (gameLoop, canvasID) ->
   ready () ->
     canv = document.createElement "canvas"
@@ -626,4 +640,4 @@ exports.Fathom =
   Point      : Point
   Vector     : Vector
   initialize : initialize
-  context    : context
+  getFPS     : getFPS
