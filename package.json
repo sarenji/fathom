@@ -3,7 +3,13 @@
   "version"       : "0.0.1",
   "description"   : "Fast, sexy JS/CoffeeScript game engine",
   "dependencies"  : {
-    "coffee-script" : ">=1.1.2",
-    "beantest"      : ">=0.0.3"
+    "coffee-script" : ">=1.1.2"
+  },
+  "devDependencies": {
+    "should": "0.6.x",
+    "mocha": "1.0.x"
+  },
+  "scripts" : {
+    "test" : "mocha"
   }
 }
