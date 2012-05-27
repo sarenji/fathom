@@ -30,6 +30,13 @@ class Util
 class Point
   constructor: (@x=0, @y=0) -> #types $number, $number
 
+  setPosition: (p) ->
+    @x = p.x
+    @y = p.y
+
+  clone: () ->
+    new Point @x, @y
+
   toRect: (size) ->
     new Rect(@x, @y, size)
 
