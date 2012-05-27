@@ -49,7 +49,15 @@ class Point
     return new Vector(@x-p.x, @y-p.y)
 
 class Vector
-  constructor: (@x, @y) -> types $number, $number
+  constructor: (@x=0, @y=0) -> types $number, $number
+
+  randomize: () ->
+    r = Math.floor(Math.random() * 4)
+    (@x =  0; @y =  1) if r == 0
+    (@x =  0; @y = -1) if r == 1
+    (@x =  1; @y =  0) if r == 2
+    (@x = -1; @y =  0) if r == 3
+    this
 
   multiply: (n) ->
     types $number
