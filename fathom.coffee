@@ -42,6 +42,11 @@ class Point
     types $("Vector")
     @x += v.x
     @y += v.y
+    this
+
+  subtract: (p) ->
+    types $("Point")
+    return new Vector(@x-p.x, @y-p.y)
 
 class Vector
   constructor: (@x, @y) -> types $number, $number
