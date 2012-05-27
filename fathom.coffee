@@ -385,7 +385,7 @@ class Entity extends Rect
         @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
         delete @__fathom.events[event] if @__fathom.events[event].length == 0
       else
-       throw "Entity#off called on an event that the entity did not have."
+       throw new Error("Entity#off called on an event that the entity did not have.")
     else if event
       delete @__fathom.events[event]
 
