@@ -17,6 +17,9 @@ describe 'Other simple types', ->
     str[0]
     obj
 
+  bool = (b) ->
+    Types.types Types.$boolean
+
   fntaker = (fn) ->
     Types.types Types.$function
     fn(5)
@@ -27,6 +30,9 @@ describe 'Other simple types', ->
   it 'Accepts function types.', ->
     (() -> fntaker((x) -> x + 1)).should.not.throw()
 
+  it 'Accepts boolean types.', ->
+    (() -> bool(false)).should.not.throw()
+
   it 'Checks function correctly.', ->
     (() -> fntaker 5).should.throw()
 
@@ -35,6 +41,9 @@ describe 'Other simple types', ->
 
   it 'Checks object correctly.', ->
     (() -> simple "", "").should.throw()
+
+  it 'Checks booleans correctly.', ->
+    (() -> bool("ack!")).should.throw()
 
 describe 'Arrays', ->
   numarray = (arr) ->
