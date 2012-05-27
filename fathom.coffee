@@ -4,9 +4,6 @@
 # I'm not sure if I like the idea of each Entity just having a function to
 # manage its groups. There are positives and negatives here.
 
-arraysEqual = (a, b) ->
-  !!a && !!b && !(a<b || b<a)
-
 class Util
   # Sign of a number.
   @sign: (n) ->
@@ -16,6 +13,9 @@ class Util
       -1
     else
       0
+
+  @arraysEqual = (a, b) ->
+    !!a && !!b && !(a<b || b<a)
 
   # Return a vector representing movement.
   # TODO: Support WASD also.
@@ -30,6 +30,9 @@ class Util
 class Point
   constructor: (@x=0, @y=0) -> types $number, $number
 
+  point: () ->
+    new Point(@x, @y)
+
   eq: (p) ->
     types $("Point")
     Util.epsilon_eq(@x, p.x) and Util.epsilon_eq(@y, p.y)
@@ -43,6 +46,9 @@ class Point
     @x += v.x
     @y += v.y
     this
+
+  offscreen: (screen) ->
+    not screen.touchingPoint @
 
   subtract: (p) ->
     types $("Point")
@@ -150,12 +156,12 @@ class BasicHooks
       object.vy += v.y
 
       object.x += object.vx
-      if object.__fathom.entities.any [(other) => other.collides(object)]
+      if object.__fathom.entities.any((other) => other.collides(object))
         object.x -= object.vx
         object.vx = 0
 
       object.y += object.vy
-      if object.__fathom.entities.any [(other) => other.collides(object)]
+      if object.__fathom.entities.any((other) => other.collides(object))
         object.y -= object.vy
         object.vy = 0
 
@@ -181,7 +187,7 @@ class BasicHooks
   @onCollide: (object, type, cb) =>
     types $("Entity"), $string, $function
     () =>
-      collisions = object.__fathom.entities.one [type, (other) -> other.collides(object)]
+      collisions = object.__fathom.entities.one(type, (other) -> other.collides(object))
       if collisions
         cb(collisions)
 
@@ -197,7 +203,7 @@ class BasicHooks
 
     # Need to check if we're on the ground before we jump
     if Key.isDown(Key.W)
-      onGround = object.__fathom.entities.any [(other) -> other.collides(this)]
+      onGround = object.__fathom.entities.any (other) -> other.collides(this)
       if onGround
         object.vy -= 50
 
@@ -235,10 +241,9 @@ class Entities
   # * If you pass in anything else, an error will be raised.
 
   #TODO: "criteria...". No reason to require it to be an array.
-  get: (criteria) ->
-    types $object #todo: not as strict as it could be
-    assert -> typeof criteria == "object"
-
+  get: (criteria...) ->
+    #types $object #todo: not as strict as it could be
+    #assert -> typeof criteria == "object"
     remainingEntities = @entities
 
     for item in criteria
@@ -259,10 +264,8 @@ class Entities
 
     remainingEntities
 
-  one: (criteria) ->
-    types $object
-
-    results = (@get criteria)
+  one: (criteria...) ->
+    results = (@get criteria...)
     if results.length
       results[0]
     else
@@ -270,10 +273,10 @@ class Entities
 
   # Returns true if there is at least 1 object that matches each criteria,
   # false otherwise.
-  any: (criteria) ->
+  any: (criteria...) ->
     types $object
 
-    (@get criteria).length > 0
+    (@get criteria...).length > 0
 
   can: (decorator) ->
     decorator.call(this)
@@ -298,7 +301,7 @@ class Entities
   # perhaps into a specialized base class.
 
   render: (context) ->
-    entities = @get ["renderable"]
+    entities = @get "renderable"
     entities.sort (a, b) -> a.depth() - b.depth()
 
     for entity in entities
@@ -308,7 +311,7 @@ class Entities
 
   update: (entities) ->
     types $("Entities")
-    for entity in @get ["updateable"]
+    for entity in @get "updateable"
       entity.emit "pre-update"
       entity.update entities
       entity.emit "post-update"
@@ -452,8 +455,6 @@ class Pixel
     types $("Pixel")
     @r == p.r and @g == p.g and @b == p.b and @a = p.a
 
-#TODO: Remove hardcoded width and height.
-
 loadImage = (loc, callback) ->
   img = document.createElement('img')
   img.onload = () ->
@@ -510,7 +511,7 @@ class Map extends Entity
       callback()
 
   groups: ->
-    ["renderable", "wall"]
+    ["renderable", "wall", "map"]
 
   collides: (other) ->
     types $('Entity')
