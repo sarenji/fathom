@@ -1,4 +1,4 @@
-{$, $number, $function, $string, $object, types} = (if typeof window == 'undefined' then (require "./types").Types else this.Types)
+{$, $optional, $boolean, $optional, $number, $function, $string, $object, types} = (if typeof window == 'undefined' then (require "./types").Types else this.Types)
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
@@ -24,25 +24,35 @@ class Util
     y = (Key.isDown(Key.Down) - Key.isDown(Key.Up))
     new Vector(x, y)
 
-  @epsilon_eq = (a, b, threshold) ->
+  @epsilonEq = (a, b, threshold) ->
     Math.abs(a - b) < threshold
 
 class Point
-  constructor: (@x=0, @y=0) -> #types $number, $number
+  constructor: (@x=0, @y=0) ->
+    types $optional($number), $optional($number)
 
-  toRect: (size) ->
-    new Rect(@x, @y, size)
+  setPosition: (p) ->
+    types $("Point")
+    @x = p.x
+    @y = p.y
+
+  clone: () ->
+    new Point @x, @y
+
+  toRect: (width, height=width) ->
+    types $number, $optional $number
+    new Rect(@x, @y, width, height)
 
   point: () ->
     new Point(@x, @y)
 
   eq: (p) ->
     types $("Point")
-    Util.epsilon_eq(@x, p.x) and Util.epsilon_eq(@y, p.y)
+    Util.epsilonEq(@x, p.x) and Util.epsilonEq(@y, p.y)
 
   close: (p, threshold=1) ->
-    types $("Point")
-    Util.epsilon_eq(@x, p.x, threshold) and Util.epsilon_eq(@y, p.y, threshold)
+    types $("Point"), $optional($number)
+    Util.epsilonEq(@x, p.x, threshold) and Util.epsilonEq(@y, p.y, threshold)
 
   add: (v) ->
     types $("Vector")
@@ -51,6 +61,7 @@ class Point
     this
 
   offscreen: (screen) ->
+    types $("Rect")
     not screen.touchingPoint @
 
   subtract: (p) ->
@@ -59,6 +70,11 @@ class Point
 
 class Vector
   constructor: (@x=0, @y=0) ->
+    types $optional($number), $optional($number)
+
+  eq: (v) ->
+    types $("Vector")
+    @x == v.x and @y == v.y
 
   randomize: () ->
     r = Math.floor(Math.random() * 4)
@@ -75,6 +91,7 @@ class Vector
     this
 
   add: (v) ->
+    types $("Vector")
     @x += v.x
     @y += v.y
     this
@@ -111,6 +128,7 @@ class Key
     @Down  = 40
 
   @start: (addListeners=true) ->
+    types $optional($boolean)
     @addKeys()
 
     @keysDown = (false for x in [0..255])
@@ -135,19 +153,16 @@ class Key
   @flush: ->
     @start(false)
 
-# BasicHooks provides callbacks for simple arrow-key-based movement. We choose
-# to return callbacks because we get some nice convience with callback-related
-# hooks, especially `pre-update`. See Depths TODO for a good example of this.
-#
 # BasicHooks requires `object` to be of type StandardControllable. But that
 # type doesn't exist right now TODO and it's also a horrible name so I have to
 # rethink this. What it means until it does is that the controlled object must
 # have a vx and a vy.
 class BasicHooks
-  #TODO: When/if I understand coffeescript better: I should be able to not have
-  #the user pass in object; it'll always be this, so I should just be able to
-  #bind with the fat arrow. But that doesn't seem to work here. Can't figure
-  #out why.
+  #TODO: These function should be called with this bound to the caller.
+
+  @stickTo: (sticker, object, dx=0, dy=0) ->
+    () ->
+      sticker.setPosition(object.clone().add(new Vector(dx, dy)))
 
   # TODO: More customization.
   # TODO: Nice accelerating controls too, perhaps.
@@ -226,10 +241,6 @@ class Entities
     @entities = []
     @entityInfo = []
 
-  flush: ->
-    #TODO: I shouldn't have to use ?.
-    @entities = (e for e in @entities when not e?.__fathom?.dead)
-
   # Adds an entity.
   add: (entity) ->
     types $("Entity")
@@ -243,7 +254,6 @@ class Entities
   # true.
   # * If you pass in anything else, an error will be raised.
 
-  #TODO: "criteria...". No reason to require it to be an array.
   get: (criteria...) ->
     #types $object #todo: not as strict as it could be
     #assert -> typeof criteria == "object"
@@ -282,12 +292,7 @@ class Entities
   can: (decorator) ->
     decorator.call(this)
 
-  #TODO "Entity" here is redundant.
-
-  removeEntities: (groups) ->
-    assert -> false #TODO: unimplemented.
-
-  removeEntity: (entity) ->
+  remove: (entity) ->
     uid = entity.__fathom.uid
     @entities = (e for e in @entities when e.__fathom.uid != uid)
 
@@ -319,38 +324,25 @@ class Entities
 
 entities = new Entities
 
-class Game
-  @currentState = null
-  @switchState = (state) ->
-    @currentState.emit "switch off" if @currentState?
-    @currentState = state
-    @currentState.emit "switch on"
-
-# State is just a convenience class that Game uses. It subclasses from
-# Entities and may have extra methods or instance variables added to it in
-# the future. It's advised to use this for managing game state over a regular
-# Entities object, as things may change in the future.
-class State extends Entities
-
 class Rect extends Point
-  constructor: (@x, @y, @size) ->
-    #types $number, $number, $number TYPE TODO
+  constructor: (@x, @y, @width, @height=@width) ->
+    types $number, $number, $number, $optional($number)
     super @x, @y
-    @right = @x + @size
-    @bottom = @y + @size
+    @right = @x + @width
+    @bottom = @y + @height
 
-  # Returns true if the current rect touches rect `other`.
-  touchingRect: (other) ->
+  # Returns true if the current rect touches rect `rect`.
+  touchingRect: (rect) ->
     types $("Rect")
-    not (other.x              > @x + @size or
-         other.x + other.size < @x         or
-         other.y              > @y + @size or
-         other.y + other.size < @y       )
+    not (rect.x                > @x + @width  or
+         rect.x + rect.width  < @x           or
+         rect.y                > @y + @height or
+         rect.y + rect.height < @y           )
 
   # Returns true if this rect contains point `point`.
   touchingPoint: (point) ->
     types $("Point")
-    @x <= point.x <= @x + @size and @y <= point.y <= @y + @size
+    @x <= point.x <= @x + @width and @y <= point.y <= @y + @height
 
 # Entity
 # ------
@@ -362,9 +354,10 @@ class Rect extends Point
 # and a callback. These callbacks are called by the `.emit` method,
 # which takes an event name.
 class Entity extends Rect
-  constructor: (x = 0, y = 0, size = 20) ->
-    #types $number, $number, $number
-    super
+  constructor: (@x = 0, @y = 0, @width = 20, @height = @width) ->
+    types $optional($number), $optional($number), $optional($number), $optional($number)
+
+    super(@x, @y, @width, @height)
 
     @__fathom =
       uid      : getUniqueID()
@@ -379,6 +372,7 @@ class Entity extends Rect
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
   on: (event, callback) ->
+    types $string, $function
     @__fathom.events[event] = chain = @__fathom.events[event] or []
     chain.push(callback) unless callback in chain
 
@@ -389,13 +383,19 @@ class Entity extends Rect
   # Fails silently if no callback was found. If no `callback` is
   # provided, all callbacks attached to an event are removed.
   off: (event, callback = null) ->
+    types $string, $optional($function)
     #TODO: I don't like how this is a non-noisy failure.
     if callback
       if @__fathom.events[event]
         @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
         delete @__fathom.events[event] if @__fathom.events[event].length == 0
+      else
+       throw new Error("Entity#off called on an event that the entity did not have.")
     else if event
-      delete @__fathom.events[event]
+      if @__fathom.events[event]
+        delete @__fathom.events[event]
+      else
+        throw new Error("Entity#off called on an event that the entity did not have.")
 
     # Return the Entity object for easy chainability.
     this
@@ -410,7 +410,7 @@ class Entity extends Rect
     this
 
   die: () ->
-    @.__fathom.entities.removeEntity @
+    @.__fathom.entities.remove @
 
   # Returns an array of the groups this Entity is a member of. Must be
   # implemented in a subclass.
@@ -438,9 +438,9 @@ class Entity extends Rect
     0
 
 class Tile extends Rect
-  constructor: (@x, @y, @size, @type) ->
+  constructor: (@x, @y, @width, @type) ->
+    super(@x, @y, @width)
     types $number, $number, $number, $number
-    super(@x, @y, @size)
 
   render: (context) ->
     if @type == 0
@@ -448,7 +448,47 @@ class Tile extends Rect
     else if @type == 1
       context.fillStyle = "#ff0"
 
-    context.fillRect @x, @y, @size, @size
+    context.fillRect @x, @y, @width, @height
+
+
+# Generic health bar
+
+class Bar extends Entity
+  constructor: (@x, @y, @width=50, @fillColor="#0f0", @emptyColor="#f00") ->
+    types $number, $number, $optional($number), $optional($string), $optional($string)
+
+    @borderColor = "#000"
+    @borderWidth = 1
+    @height = 10
+
+    @amt = 50
+    @total = 100
+
+    super @x, @y, @width, @height
+
+  groups: -> ["renderable", "updateable", "bar"]
+  collides: -> false
+  update: ->
+
+  render: (context) ->
+    # fill border
+    context.fillStyle = @borderColor
+    context.fillRect @x, @y, @width, @height
+
+    # fill empty color
+    context.fillStyle = @emptyColor
+    context.fillRect @x + @borderWidth, @y + @borderWidth, @width - @borderWidth * 2, @height - @borderWidth * 2
+
+    coloredWidth = (@amt / @total) * (@width - 2)
+    # fill full color
+    context.fillStyle = @fillColor
+    context.fillRect @x + @borderWidth, @y + @borderWidth, coloredWidth, @height - @borderWidth * 2
+
+class FollowBar extends Bar
+  constructor: (@follow, rest...) ->
+    super(rest...)
+
+    @on "pre-update", Fathom.BasicHooks.stickTo(@, @follow, 0, -10)
 
 class Pixel
   constructor: (@r, @g, @b, @a) -> types $number, $number, $number, $number
@@ -475,7 +515,7 @@ loadImage = (loc, callback) ->
 class Map extends Entity
   constructor: (@width, @height, @size) ->
     types $number, $number, $number
-    super 0, 0, @size
+    super 0, 0, @size, @size
 
     @tiles = ((null for b in [0...height]) for a in [0...width])
     @data = undefined
@@ -483,7 +523,7 @@ class Map extends Entity
 
   setTile: (x, y, type) =>
     types $number, $number, $number
-    @tiles[x][y] = new Tile(x * @size, y * @size, @size, type)
+    @tiles[x][y] = new Tile(x * @width, y * @height, @width, type)
 
   # Set the top right corner of the visible map.
   # TODO: This has a bad name. TODO and now it's even worse because it's a delta.
@@ -536,7 +576,7 @@ class StaticImage extends Entity
 
 class Text extends Entity
   constructor: (@text, x=0, y=0, opts={}) ->
-    #types $string, $number, $number, $object
+    types $string, $optional($number), $optional($number), $optional($object)
     super x, y
     @color    = opts.color    || "#000000"
     @baseline = opts.baseline || "top"
@@ -552,9 +592,11 @@ class Text extends Entity
   render: (context) ->
     context.fillText @text, @x, @y
   depth: -> 2
+  collides: -> false
 
 class TextBox extends Text
   constructor: (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
+    types $string, $number, $number, $optional($number), $optional($number), $optional($object)
     super text, x, y, opts
 
   groups: -> ["renderable", "updateable"]
@@ -585,10 +627,12 @@ class TextBox extends Text
 
 # To start Fathom, document.body must exist.
 ready = (callback) ->
+  types $function
   if document.body then callback() else setTimeout (-> ready callback), 250
 
 # TODO: This implementation is not complete.
 fixedInterval = (fn, fps=24) ->
+  types $function, $optional($number)
   setInterval fn, 1000/fps
 
 context = null # Graphics context for the game.
@@ -609,6 +653,7 @@ getFPS.lastUpdate = +new Date()
 getFPS.fps = 0
 
 initialize = (gameLoop, canvasID) ->
+  types $function, $string
   ready () ->
     canv = document.createElement "canvas"
     canv.width = canv.height = 500
@@ -629,7 +674,6 @@ initialize = (gameLoop, canvasID) ->
 # Export necessary things outside of closure.
 exports = (module?.exports or this)
 exports.Fathom =
-  Game       : Game
   Util       : Util
   Key        : Key
   Entity     : Entity
@@ -637,6 +681,8 @@ exports.Fathom =
   BasicHooks : BasicHooks
   Text       : Text
   Rect       : Rect
+  Bar        : Bar
+  FollowBar  : FollowBar
   TextBox    : TextBox
   Map        : Map
   Point      : Point

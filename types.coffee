@@ -27,10 +27,20 @@ NEXT_FUNCTION = 2
 
 #TODO: Union types.
 #TODO: Heterogenous tuples.
+#TODO: Rewrite this whole thing.
 $string = (type = EVERYTHING) -> "string"
+$boolean = (type = EVERYTHING) -> "boolean"
 $number = (type = EVERYTHING) -> "number"
 $object = (type = EVERYTHING) -> "object"
 $function = (type = EVERYTHING) -> "function" #doing better function types seems very hard.
+$optional = (type) ->
+  (how_deep) ->
+    if how_deep == OUTER_ONLY
+      "optional"
+    else if how_deep == NEXT_FUNCTION
+      type
+    else
+      "optional(#{type(EVERYTHING)})"
 
 $ = (type) ->
   (how_deep) ->
@@ -48,21 +58,41 @@ $array = (type) ->
     else
       "array(#{type(EVERYTHING)})"
 
+throwError = (expected, received) ->
+  err = "TypeError: got #{received}, expected #{expected} in #{types.caller}"
+
+  console.log err
+  throw new Error("TypeError")
+
+validateArgumentCount = (given, expected) ->
+  lowCount = 0
+  highCount = 0
+  for type in expected
+    highCount++
+    lowCount++  if type(OUTER_ONLY) != "optional"
+
+  if not (lowCount <= given.length <= highCount)
+    if lowCount == highCount
+      console.log "Incorrect number of arguments. Got #{given.length}, expected #{expected.length} in #{types.caller}"
+    else
+      console.log "Incorrect number of arguments. Got #{given.length}, expected #{lowCount} to #{highCount} in #{types.caller}"
+
+    console.trace()
+    throw new Error("ArgumentCountError")
+
 types = (typeList...) ->
 
   # Ascend the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments
 
-  throwError = (expected, received) ->
-    err = "TypeError: got #{received}, expected #{expected} in #{types.caller}"
+  validateArgumentCount(args, typeList)
 
-    console.log err
-    throw new Error("TypeError")
+  # Replace all optional types in the type list with their non-optional
+  # counterpart. Since we've ensured that the number of passed in arguments is
+  # valid, we can now just loop through each extant argument and ensure it's
+  # correct at this point.
 
-  if args.length != typeList.length
-    console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{types.caller}"
-    console.trace()
-    throw new Error("ArgumentCountError")
+  typeList = ((if t(OUTER_ONLY) == "optional" then t(NEXT_FUNCTION) else t) for t in typeList)
 
   checkType = (type_given, object) ->
     if typeof object == "undefined"
@@ -78,6 +108,9 @@ types = (typeList...) ->
     switch type_given(OUTER_ONLY)
       when "string"
         if typeof object != "string"
+          throwError type_given(true), typeof object
+      when "boolean"
+        if typeof object != "boolean"
           throwError type_given(true), typeof object
       when "number"
         if typeof object != "number"
@@ -107,4 +140,4 @@ types = (typeList...) ->
 #Types = {$number: $number, $string: $string, $object: $object, $: $, $array: $array, types: types}
 
 exports = (module?.exports or this)
-exports.Types = {$ : $, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}
+exports.Types = {$ : $, $boolean: $boolean, $optional: $optional, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}

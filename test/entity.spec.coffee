@@ -69,13 +69,13 @@ describe 'Entity', ->
     describe 'on a bogus event', ->
       describe 'when providing a specific callback', ->
         entity = new Fathom.Entity
-        it 'should fail silently', ->
-          (-> entity.off('bogus event', ->)).should.not.throw()
+        it 'should fail noisily', ->
+          (-> entity.off('bogus event', ->)).should.throw()
 
       describe 'when only providing the event name', ->
         entity = new Fathom.Entity
-        it 'should fail silently', ->
-          (-> entity.off('bogus event')).should.not.throw()
+        it 'should fail noisily', ->
+          (-> entity.off('bogus event')).should.throw()
 
   describe '#emit', ->
     it 'should not error on a bogus event', ->

@@ -17,6 +17,9 @@ describe 'Other simple types', ->
     str[0]
     obj
 
+  bool = (b) ->
+    Types.types Types.$boolean
+
   fntaker = (fn) ->
     Types.types Types.$function
     fn(5)
@@ -27,6 +30,9 @@ describe 'Other simple types', ->
   it 'Accepts function types.', ->
     (() -> fntaker((x) -> x + 1)).should.not.throw()
 
+  it 'Accepts boolean types.', ->
+    (() -> bool(false)).should.not.throw()
+
   it 'Checks function correctly.', ->
     (() -> fntaker 5).should.throw()
 
@@ -35,6 +41,9 @@ describe 'Other simple types', ->
 
   it 'Checks object correctly.', ->
     (() -> simple "", "").should.throw()
+
+  it 'Checks booleans correctly.', ->
+    (() -> bool("ack!")).should.throw()
 
 describe 'Arrays', ->
   numarray = (arr) ->
@@ -54,10 +63,10 @@ describe 'Arrays', ->
 
 describe 'User types', ->
   class Point
-    constructor : (@x, @y) ->
+    constructor: (@x, @y) ->
 
   class ColorPoint
-    constructor : (@x, @y, @color) ->
+    constructor: (@x, @y, @color) ->
 
   addpoint = (pt1, pt2) ->
     Types.types Types.$("Point"), Types.$("Point")
@@ -70,6 +79,17 @@ describe 'User types', ->
   it 'Checks user types correctly.', -> (() -> addpoint(new Point(0, 0), new Point(0, 0))).should.not.throw()
   it 'Checks user types correctly.', -> (() -> addpoint(new Point(0, 0), new ColorPoint(0, 0))).should.throw()
   it 'Checks user types correctly.', -> (() -> colorz(new Point(0, 0), new ColorPoint(0, 0))).should.not.throw()
+
+describe 'Optional types', ->
+  optionaltastic = (a, b, c=0, d=0) ->
+    Types.types Types.$number, Types.$number, Types.$optional(Types.$number), Types.$optional(Types.$number)
+
+  it 'validates a correctly called optional function', -> (() -> optionaltastic(0, 0, 0, 0)).should.not.throw()
+  it 'validates a correctly called optional function', -> (() -> optionaltastic(0, 0, 0)).should.not.throw()
+  it 'validates a correctly called optional function', -> (() -> optionaltastic(0, 0)).should.not.throw()
+
+  it 'throws for too few arguments', -> (() -> optionaltastic(0)).should.throw()
+  it 'throws for too many arguments', -> (() -> optionaltastic(0, 0, 0, 0, 0)).should.throw()
 
 describe 'User types with subtype relations', ->
   class Point
