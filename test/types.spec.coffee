@@ -71,6 +71,17 @@ describe 'User types', ->
   it 'Checks user types correctly.', -> (() -> addpoint(new Point(0, 0), new ColorPoint(0, 0))).should.throw()
   it 'Checks user types correctly.', -> (() -> colorz(new Point(0, 0), new ColorPoint(0, 0))).should.not.throw()
 
+describe 'Optional types', ->
+  optionaltastic = (a, b, c=0, d=0) ->
+    Types.types Types.$number, Types.$number, Types.$optional(Types.$number), Types.$optional(Types.$number)
+
+  it 'validates a correctly called optional function', -> (() -> optionaltastic(0, 0, 0, 0)).should.not.throw()
+  it 'validates a correctly called optional function', -> (() -> optionaltastic(0, 0, 0)).should.not.throw()
+  it 'validates a correctly called optional function', -> (() -> optionaltastic(0, 0)).should.not.throw()
+
+  it 'throws for too few arguments', -> (() -> optionaltastic(0)).should.throw()
+  it 'throws for too many arguments', -> (() -> optionaltastic(0, 0, 0, 0, 0)).should.throw()
+
 describe 'User types with subtype relations', ->
   class Point
     constructor : (@x, @y) ->
