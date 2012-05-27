@@ -27,10 +27,19 @@ NEXT_FUNCTION = 2
 
 #TODO: Union types.
 #TODO: Heterogenous tuples.
+#TODO: Rewrite this whole thing.
 $string = (type = EVERYTHING) -> "string"
 $number = (type = EVERYTHING) -> "number"
 $object = (type = EVERYTHING) -> "object"
 $function = (type = EVERYTHING) -> "function" #doing better function types seems very hard.
+$optional = (type) ->
+  (how_deep) ->
+    if how_deep == OUTER_ONLY
+      "optional"
+    else if how_deep == NEXT_FUNCTION
+      type
+    else
+      "optional(#{type(EVERYTHING)})"
 
 $ = (type) ->
   (how_deep) ->
@@ -48,21 +57,37 @@ $array = (type) ->
     else
       "array(#{type(EVERYTHING)})"
 
+throwError = (expected, received) ->
+  err = "TypeError: got #{received}, expected #{expected} in #{types.caller}"
+
+  console.log err
+  throw new Error("TypeError")
+
+validArgumentCount = (given, expected) ->
+  lowCount = 0
+  highCount = 0
+  for type in expected
+    highCount++
+    lowCount++  if type(OUTER_ONLY) != "optional"
+
+  return lowCount <= given.length <= highCount
+
 types = (typeList...) ->
 
   # Ascend the stack trace to get args of calling function.
   args = Array.prototype.slice.call types.caller.arguments
 
-  throwError = (expected, received) ->
-    err = "TypeError: got #{received}, expected #{expected} in #{types.caller}"
-
-    console.log err
-    throw new Error("TypeError")
-
-  if args.length != typeList.length
+  if not validArgumentCount(args, typeList)
     console.log "Incorrect number of arguments. Got #{args.length}, expected #{typeList.length} in #{types.caller}"
     console.trace()
     throw new Error("ArgumentCountError")
+
+  # Replace all optional types in the type list with their non-optional
+  # counterpart. Since we've ensured that the number of passed in arguments is
+  # valid, we can now just loop through each extant argument and ensure it's
+  # correct at this point.
+
+  typeList = ((if t(OUTER_ONLY) == "optional" then t(NEXT_FUNCTION) else t) for t in typeList)
 
   checkType = (type_given, object) ->
     if typeof object == "undefined"
@@ -107,4 +132,4 @@ types = (typeList...) ->
 #Types = {$number: $number, $string: $string, $object: $object, $: $, $array: $array, types: types}
 
 exports = (module?.exports or this)
-exports.Types = {$ : $, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}
+exports.Types = {$ : $, $optional: $optional, $number: $number, $string : $string, $object : $object, $array : $array, $function : $function, types: types}
