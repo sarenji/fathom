@@ -28,7 +28,15 @@ class Util
     Math.abs(a - b) < threshold
 
 class Point
-  constructor: (@x, @y) -> types $number, $number
+  constructor: (@x=0, @y=0) -> types $number, $number
+
+  eq: (p) ->
+    types $("Point")
+    Util.epsilon_eq(@x, p.x) and Util.epsilon_eq(@y, p.y)
+
+  close: (p, threshold=1) ->
+    types $("Point")
+    Util.epsilon_eq(@x, p.x, threshold) and Util.epsilon_eq(@y, p.y, threshold)
 
   add: (v) ->
     types $("Vector")
