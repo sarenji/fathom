@@ -716,6 +716,8 @@ initialize = (gameLoop, canvasID) ->
     wrappedLoop = () ->
       gameLoop context
       entities.update entities
+      context.fillStyle = "#fff"
+      context.fillRect 0, 0, 500, 500
       if cam
         cam.render entities, context
       else
