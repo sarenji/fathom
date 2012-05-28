@@ -4,7 +4,8 @@
 #
 # types(Number, String)
 # types(Array(Number))
-# TODO: types(Array)
+# types(Array)
+# types(Number, Optional(Object))
 #
 types = (typeList...) ->
   # Ascend the stack trace to get args of calling function.
@@ -32,6 +33,7 @@ types = (typeList...) ->
     checkType(type, calledWith[i])
 
 checkType = (type, calledWith) ->
+  # TODO: Handle heterogenous optional types.
   # Handle primitive types
   switch typeof calledWith
     when 'number'
@@ -41,18 +43,22 @@ checkType = (type, calledWith) ->
     when 'boolean'
       throwError(type, "Boolean")  unless type == Boolean
     else
-      # TODO: Handle heterogenous arrays
-      if calledWith instanceof Array && type instanceof Array
-        subtype = type[0]
-        for _, i in calledWith
-          checkType(subtype, calledWith[i])
+      if calledWith instanceof Array
+        # TODO: Handle heterogenous arrays
+        if type not instanceof Array
+          # `type` and `calledWith` don't match, so we want to error.
+          throwError(type, "Array")
+        else
+          # Check type of all elements inside the calledWith array
+          subtype = type[0]
+          for _, i in calledWith
+            checkType(subtype, calledWith[i])
       else
         throwError(type, calledWith.name)  unless calledWith instanceof type
 
 throwError = (expected, actual) ->
   throw new Error("Expected #{expected}, got #{actual}.")
 
-# TODO: Handle heterogenous optional types.
 Optional = (type) ->
   if this not instanceof Optional
     return new Optional(type)

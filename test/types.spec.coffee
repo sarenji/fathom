@@ -20,6 +20,9 @@ describe 'Other simple types', ->
   fntaker = (fn) ->
     Types.types(Function)
 
+  objtaker = (obj) ->
+    Types.types(Object)
+
   it 'Accepts string and object types.', ->
     (-> simple("ima string", {ima_object: true})).should.not.throw()
 
@@ -40,6 +43,13 @@ describe 'Other simple types', ->
 
   it 'Checks booleans correctly.', ->
     (-> bool("ack!")).should.throw()
+
+  it "checks objects correctly", ->
+    (-> objtaker({})).should.not.throw()
+
+  it "denies an array as an object", ->
+    (-> objtaker([])).should.throw()
+
 
 describe 'Arrays', ->
   numarray = (arr) ->
