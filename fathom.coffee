@@ -582,7 +582,7 @@ class Map extends Entity
 
     for x in [xStart..xStart+2]
       for y in [yStart..yStart+2]
-        if 0 <= x <= @width and 0 <= y <= @height
+        if 0 <= x <= @widthInTiles and 0 <= y <= @heightInTiles
           if @tiles[x][y].type == 1 and @tiles[x][y].touchingRect other
             return true
 
@@ -761,3 +761,4 @@ exports.Fathom =
   Vector     : Vector
   initialize : initialize
   getFPS     : getFPS
+
