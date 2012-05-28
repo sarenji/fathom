@@ -11,5 +11,13 @@
   },
   "scripts" : {
     "test" : "mocha"
-  }
+  },
+  "author": {
+    "name": "Grant Mathews",
+    "email": "johnfn@gmail.com",
+    "url": "http://github.com/johnfn"
+  },
+  "contributors": [
+    "David Peter <david.a.peter@gmail.com>"
+  ]
 }
