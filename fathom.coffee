@@ -151,8 +151,8 @@ class Key
     @keysDown = (false for x in [0..255])
 
     if addListeners
-      document.onkeydown = (e) => @keysDown[@getCode e] = true; if e in [@Left, @Up, @Right, @Down] then e.preventDefault()
-      document.onkeyup = (e) => @keysDown[@getCode e] = false; if e in [@Left, @Up, @Right, @Down] then e.preventDefault()
+      document.onkeydown = (e) => @keysDown[@getCode e] = true; if (@getCode e) in [@Left, @Up, @Right, @Down] then e.preventDefault()
+      document.onkeyup = (e) => @keysDown[@getCode e] = false; if (@getCode e) in [@Left, @Up, @Right, @Down] then e.preventDefault()
 
   @isDown: (key) ->
     types $number
@@ -582,7 +582,7 @@ class Map extends Entity
 
     for x in [xStart..xStart+2]
       for y in [yStart..yStart+2]
-        if 0 <= x <= @widthInTiles and 0 <= y <= @heightInTiles
+        if 0 <= x < @widthInTiles and 0 <= y < @heightInTiles
           if @tiles[x][y].type == 1 and @tiles[x][y].touchingRect other
             return true
 
