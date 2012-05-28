@@ -1,4 +1,4 @@
-{$, $optional, $boolean, $optional, $number, $function, $string, $object, types} = (if typeof window == 'undefined' then (require "./types").Types else this.Types)
+{Optional, types} = (if typeof window == 'undefined' then (require "./types").Types else this.Types)
 
 # TODO
 # I'm not sure if I like the idea of each Entity just having a function to
@@ -40,10 +40,10 @@ class Color
 
 class Point
   constructor: (@x=0, @y=0) ->
-    types $optional($number), $optional($number)
+    types(Optional(Number), Optional(Number))
 
   setPosition: (p) ->
-    types $("Point")
+    types(Point)
     @x = p.x
     @y = p.y
 
@@ -51,40 +51,40 @@ class Point
     new Point @x, @y
 
   toRect: (width, height=width) ->
-    types $number, $optional $number
+    types(Number, Optional(Number))
     new Rect(@x, @y, width, height)
 
   point: () ->
     new Point(@x, @y)
 
   eq: (p) ->
-    types $("Point")
+    types(Point)
     Util.epsilonEq(@x, p.x) and Util.epsilonEq(@y, p.y)
 
   close: (p, threshold=1) ->
-    types $("Point"), $optional($number)
+    types(Point, Optional(Number))
     Util.epsilonEq(@x, p.x, threshold) and Util.epsilonEq(@y, p.y, threshold)
 
   add: (v) ->
-    types $("Vector")
+    types(Vector)
     @x += v.x
     @y += v.y
     this
 
   offscreen: (screen) ->
-    types $("Rect")
+    types(Rect)
     not screen.touchingPoint @
 
   subtract: (p) ->
-    types $("Point")
+    types(Point)
     return new Vector(@x-p.x, @y-p.y)
 
 class Vector
   constructor: (@x=0, @y=0) ->
-    types $optional($number), $optional($number)
+    types(Optional(Number), Optional(Number))
 
   eq: (v) ->
-    types $("Vector")
+    types(Vector)
     @x == v.x and @y == v.y
 
   randomize: () ->
@@ -96,7 +96,7 @@ class Vector
     this
 
   multiply: (n) ->
-    types $number
+    types(Number)
     @x *= n
     @y *= n
     this
@@ -108,7 +108,7 @@ class Vector
     this
 
   add: (v) ->
-    types $("Vector")
+    types(Vector)
     @x += v.x
     @y += v.y
     this
@@ -145,7 +145,7 @@ class Key
     @Down  = 40
 
   @start: (addListeners=true) ->
-    types $optional($boolean)
+    types(Optional(Boolean))
     @addKeys()
 
     @keysDown = (false for x in [0..255])
@@ -155,12 +155,12 @@ class Key
       document.onkeyup = (e) => @keysDown[@getCode e] = false; if (@getCode e) in [@Left, @Up, @Right, @Down] then e.preventDefault()
 
   @isDown: (key) ->
-    types $number
+    types(Number)
 
     @keysDown[key]
 
   @isUp: (key) ->
-    types $number
+    types(Number)
     if @keysDown[key]
       @keysDown[key] = false
       true
@@ -188,7 +188,7 @@ class BasicHooks
   # TODO: More customization.
   # TODO: Nice accelerating controls too, perhaps.
   @rpgLike: (speed, object) =>
-    types $number, $("Entity")
+    types(Number, Entity)
     () =>
       v = Util.movementVector().multiply(speed)
       object.vx += v.x
@@ -207,7 +207,7 @@ class BasicHooks
 
   # TODO: Pass in cutoff and decel.
   @decel: (object) =>
-    types $object
+    types(Object)
     cutoff = .5
     decel = 2
 
@@ -219,12 +219,12 @@ class BasicHooks
       object.vy /= decel
 
   @move: (object, direction) =>
-    types $("Entity"), $("Vector")
+    types(Entity, Vector)
     () =>
       object.add(direction)
 
   @onCollide: (object, type, cb) =>
-    types $("Entity"), $string, $function
+    types(Entity, String, Function)
     () =>
       collisions = object.__fathom.entities.one(type, (other) -> other.collides(object))
       if collisions
@@ -236,7 +236,7 @@ class BasicHooks
         cb.bind(object)()
 
   @platformerLike: (speed, object) =>
-    types $number, $("Entity"), $("Entities")
+    types(Number, Entity, Entities)
     object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
     object.vy += 5
 
@@ -264,7 +264,7 @@ class Entities
 
   # Adds an entity.
   add: (entity) ->
-    types $("Entity")
+    types(Entity)
     @entities.push entity
 
   # Get all Entities that match each of an array of criteria.
@@ -318,7 +318,7 @@ class Entities
     @entities = (e for e in @entities when e.__fathom.uid != uid)
 
   getEntity: (groups) ->
-    types $object
+    types(Object)
     result = @get groups
     assert -> result.length == 1
 
@@ -337,7 +337,7 @@ class Entities
       entity.emit "post-render"
 
   update: (entities) ->
-    types $("Entities")
+    types(Entities)
     for entity in @get "updateable"
       entity.emit "pre-update"
       entity.update entities
@@ -347,14 +347,14 @@ entities = new Entities
 
 class Rect extends Point
   constructor: (@x, @y, @width, @height=@width) ->
-    types $number, $number, $number, $optional($number)
+    types(Number, Number, Number, Optional(Number))
     super @x, @y
     @right = @x + @width
     @bottom = @y + @height
 
   # Returns true if the current rect touches rect `rect`.
   touchingRect: (rect) ->
-    types $("Rect")
+    types(Rect)
     not (rect.x                > @x + @width  or
          rect.x + rect.width  < @x           or
          rect.y                > @y + @height or
@@ -362,7 +362,7 @@ class Rect extends Point
 
   # Returns true if this rect contains point `point`.
   touchingPoint: (point) ->
-    types $("Point")
+    types(Point)
     @x <= point.x <= @x + @width and @y <= point.y <= @y + @height
 
 # Entity
@@ -376,7 +376,7 @@ class Rect extends Point
 # which takes an event name.
 class Entity extends Rect
   constructor: (@x = 0, @y = 0, @width = 20, @height = @width, @color="#000") ->
-    types $optional($number), $optional($number), $optional($number), $optional($number)
+    types(Optional(Number), Optional(Number), Optional(Number), Optional(Number))
 
     super(@x, @y, @width, @height)
 
@@ -393,7 +393,7 @@ class Entity extends Rect
   # Adds a `callback` function to a string `event`.
   # Callbacks are stackable, and are called in order of addition.
   on: (event, callback) ->
-    types $string, $function
+    types(String, Function)
     @__fathom.events[event] = chain = @__fathom.events[event] or []
     chain.push(callback) unless callback in chain
 
@@ -404,7 +404,7 @@ class Entity extends Rect
   # Fails silently if no callback was found. If no `callback` is
   # provided, all callbacks attached to an event are removed.
   off: (event, callback = null) ->
-    types $string, $optional($function)
+    types(String, Optional(Function))
     if callback
       if @__fathom.events[event]
         @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
@@ -455,7 +455,7 @@ class Entity extends Rect
 class Tile extends Rect
   constructor: (@x, @y, @width, @type) ->
     super(@x, @y, @width)
-    types $number, $number, $number, $number
+    types(Number, Number, Number, Number)
 
     if @type == 0
       @color = new Color().randomizeRed(150, 255).toString()
@@ -472,7 +472,7 @@ class Tile extends Rect
 
 class Bar extends Entity
   constructor: (@x, @y, @width=50, @fillColor="#0f0", @emptyColor="#f00") ->
-    types $number, $number, $optional($number), $optional($string), $optional($string)
+    types(Number, Number, Optional(Number), Optional(String), Optional(String))
 
     @borderColor = "#000"
     @borderWidth = 1
@@ -507,9 +507,9 @@ class FollowBar extends Bar
     @on "pre-update", Fathom.BasicHooks.stickTo(@, @follow, 0, -10)
 
 class Pixel
-  constructor: (@r, @g, @b, @a) -> types $number, $number, $number, $number
+  constructor: (@r, @g, @b, @a) -> types(Number, Number, Number, Number)
   eq: (p) ->
-    types $("Pixel")
+    types(Pixel)
     @r == p.r and @g == p.g and @b == p.b and @a = p.a
 
 loadImage = (loc, callback) ->
@@ -530,7 +530,7 @@ loadImage = (loc, callback) ->
 
 class Map extends Entity
   constructor: (@widthInTiles, @heightInTiles, @tileSize) ->
-    types $number, $number, $number
+    types(Number, Number, Number)
     super 0, 0, @widthInTiles * @tileSize, @heightInTile * @tileSizes
 
     @tiles = ((null for b in [0...@heightInTiles]) for a in [0...@widthInTiles])
@@ -538,13 +538,13 @@ class Map extends Entity
     @corner = new Point(0, 0)
 
   setTile: (x, y, type) =>
-    types $number, $number, $number
+    types(Number, Number, Number)
     @tiles[x][y] = new Tile(x * @tileSize, y * @tileSize, @tileSize, type)
 
   # Set the top right corner of the visible map.
   # TODO: This has a bad name. TODO and now it's even worse because it's a delta.
   setCorner: (diff) ->
-    types $("Vector")
+    types(Vector)
     @corner.add(diff.multiply(@widthInTiles))
 
     for x in [0... @widthInTiles]
@@ -557,7 +557,7 @@ class Map extends Entity
         @setTile(x, y, val)
 
   fromImage: (loc, corner, callback) ->
-    types $string, $("Vector"), $function
+    types(String, Vector, Function)
     ready =>
       if @data
         @setCorner(corner)
@@ -572,7 +572,7 @@ class Map extends Entity
     ["renderable", "wall", "map"]
 
   collides: (other) ->
-    types $('Rect')
+    types(Rect)
     xStart = Math.floor(other.x/@tileSize)
     yStart = Math.floor(other.y/@tileSize)
 
@@ -596,7 +596,7 @@ class StaticImage extends Entity
 
 class Text extends Entity
   constructor: (@text, x=0, y=0, opts={}) ->
-    types $string, $optional($number), $optional($number), $optional($object)
+    types(String, Optional(Number), Optional(Number), Optional(Object))
     super x, y
     @color    = opts.color    || "#000000"
     @baseline = opts.baseline || "top"
@@ -647,7 +647,7 @@ class FollowCam extends Camera
 
 class TextBox extends Text
   constructor: (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
-    types $string, $number, $number, $optional($number), $optional($number), $optional($object)
+    types(String, Number, Number, Optional(Number), Optional(Number), Optional(Object))
     super text, x, y, opts
 
   groups: -> ["renderable", "updateable"]
@@ -678,12 +678,12 @@ class TextBox extends Text
 
 # To start Fathom, document.body must exist.
 ready = (callback) ->
-  types $function
+  types(Function)
   if document.body then callback() else setTimeout (-> ready callback), 250
 
 # TODO: This implementation is not complete.
 fixedInterval = (fn, fps=24) ->
-  types $function, $optional($number)
+  types(Function, Optional(Number))
   setInterval fn, 1000/fps
 
 context = null # Graphics context for the game.
@@ -704,7 +704,7 @@ getFPS.lastUpdate = +new Date()
 getFPS.fps = 0
 
 initialize = (gameLoop, canvasID) ->
-  types $function, $string
+  types(Function, String)
   window_size = 500 #TODO
 
   ready () ->
