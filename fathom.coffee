@@ -29,6 +29,15 @@ class Util
 
   @randRange = (low, high) -> low + Math.floor(Math.random() * (high - low))
 
+class Color
+  constructor: (@r=0, @g=0, @b=0) ->
+
+  toString: () -> "##{@r.toString(16)[0]}#{@g.toString(16)[0]}#{@b.toString(16)[0]}"
+
+  randomizeRed  : (low=0, high=255) -> @r = Util.randRange(low, high); @
+  randomizeGreen: (low=0, high=255) -> @g = Util.randRange(low, high); @
+  randomizeBlue : (low=0, high=255) -> @b = Util.randRange(low, high); @
+
 class Point
   constructor: (@x=0, @y=0) ->
     types $optional($number), $optional($number)
@@ -734,6 +743,7 @@ exports.Fathom =
   Key        : Key
   Entity     : Entity
   Entities   : Entities
+  Color      : Color
   Camera     : Camera
   FollowCam  : FollowCam
   BasicHooks : BasicHooks
