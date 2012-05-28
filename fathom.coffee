@@ -533,26 +533,26 @@ loadImage = (loc, callback) ->
   img.src = loc
 
 class Map extends Entity
-  constructor: (@width, @height, @size) ->
+  constructor: (@widthInTiles, @heightInTiles, @tileSize) ->
     types $number, $number, $number
-    super 0, 0, @size, @size
+    super 0, 0, @widthInTiles * @tileSize, @heightInTile * @tileSizes
 
-    @tiles = ((null for b in [0...height]) for a in [0...width])
+    @tiles = ((null for b in [0...@heightInTiles]) for a in [0...@widthInTiles])
     @data = undefined
     @corner = new Point(0, 0)
 
   setTile: (x, y, type) =>
     types $number, $number, $number
-    @tiles[x][y] = new Tile(x * @width, y * @height, @width, type)
+    @tiles[x][y] = new Tile(x * @tileSize, y * @tileSize, @tileSize, type)
 
   # Set the top right corner of the visible map.
   # TODO: This has a bad name. TODO and now it's even worse because it's a delta.
   setCorner: (diff) ->
     types $("Vector")
-    @corner.add(diff.multiply(@width))
+    @corner.add(diff.multiply(@widthInTiles))
 
-    for x in [0... + @width]
-      for y in [0... + @height]
+    for x in [0... @widthInTiles]
+      for y in [0... @heightInTiles]
         if @data[@corner.x + x][@corner.y + y].eq(new Pixel(0, 0, 0, 255)) #TODO. Too specific.
           val = 1
         else
@@ -562,31 +562,35 @@ class Map extends Entity
 
   fromImage: (loc, corner, callback) ->
     types $string, $("Vector"), $function
-    if @data
-      @setCorner(corner)
-      return
+    ready =>
+      if @data
+        @setCorner(corner)
+        return
 
-    loadImage loc, (data) =>
-      @data = data
-      @setCorner(corner)
-      callback()
+      loadImage loc, (data) =>
+        @data = data
+        @setCorner(corner)
+        callback()
 
   groups: ->
     ["renderable", "wall", "map"]
 
   collides: (other) ->
     types $('Rect')
-    #TODO insanely inefficient.
-    for x in [0...@width]
-      for y in [0...@height]
-        if @tiles[x][y].type == 1 and @tiles[x][y].touchingRect other
-          return true
+    xStart = Math.floor(other.x/@tileSize)
+    yStart = Math.floor(other.y/@tileSize)
+
+    for x in [xStart..xStart+2]
+      for y in [yStart..yStart+2]
+        if 0 <= x <= @width and 0 <= y <= @height
+          if @tiles[x][y].type == 1 and @tiles[x][y].touchingRect other
+            return true
 
     return false
 
   render: (context) ->
-    for tileX in [0...@width]
-      for tileY in [0...@height]
+    for tileX in [0...@widthInTiles]
+      for tileY in [0...@heightInTiles]
         @tiles[tileX][tileY].render context, @x, @y
 
 class StaticImage extends Entity
