@@ -44,8 +44,7 @@ checkType = (type, calledWith) ->
       throwError(type, "Boolean")  unless type == Boolean
     else
       if calledWith instanceof Array
-        # TODO: Handle heterogenous arrays
-        if type not instanceof Array
+        if type not instanceof Array && type != Array
           # `type` and `calledWith` don't match, so we want to error.
           throwError(type, "Array")
         else

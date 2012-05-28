@@ -23,6 +23,9 @@ describe 'Other simple types', ->
   objtaker = (obj) ->
     Types.types(Object)
 
+  arraytaker = (array) ->
+    Types.types(Array)
+
   it 'Accepts string and object types.', ->
     (-> simple("ima string", {ima_object: true})).should.not.throw()
 
@@ -31,6 +34,12 @@ describe 'Other simple types', ->
 
   it 'Accepts boolean types.', ->
     (-> bool(false)).should.not.throw()
+
+  it "accepts array types", ->
+    (-> arraytaker([])).should.not.throw()
+
+  it "accepts object types", ->
+    (-> objtaker({})).should.not.throw()
 
   it 'Checks function correctly.', ->
     (-> fntaker(5)).should.throw()
@@ -44,11 +53,11 @@ describe 'Other simple types', ->
   it 'Checks booleans correctly.', ->
     (-> bool("ack!")).should.throw()
 
-  it "checks objects correctly", ->
-    (-> objtaker({})).should.not.throw()
-
   it "denies an array as an object", ->
     (-> objtaker([])).should.throw()
+
+  it "checks arrays correctly", ->
+    (-> arraytaker({})).should.throw()
 
 
 describe 'Arrays', ->
