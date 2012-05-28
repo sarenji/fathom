@@ -28,6 +28,7 @@ class Util
     Math.abs(a - b) < threshold
 
   @randRange = (low, high) -> low + Math.floor(Math.random() * (high - low))
+  @randElem = (arr) -> arr[Util.randRange(0, arr.length)]
 
 class Color
   constructor: (@r=0, @g=0, @b=0) ->
