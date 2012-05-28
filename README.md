@@ -1,4 +1,4 @@
-# Fathom
+# Fathom [![Build Status](https://secure.travis-ci.org/sarenji/fathom.png?branch=master)](http://travis-ci.org/sarenji/fathom)
 
 Fathom is an easy-to-use JS/CoffeeScript game development library.
 
