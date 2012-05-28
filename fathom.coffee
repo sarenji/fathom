@@ -211,23 +211,22 @@ class BasicHooks
     decel = 2
 
     () ->
-      this.vx = 0 if Math.abs(this.vx) < cutoff
-      this.vy = 0 if Math.abs(this.vy) < cutoff
+      @vx = 0 if Math.abs(@vx) < cutoff
+      @vy = 0 if Math.abs(@vy) < cutoff
 
-      this.vx /= decel
-      this.vy /= decel
+      @vx /= decel
+      @vy /= decel
 
-  @move: (object, direction) =>
-    types(Entity, Vector)
-    () =>
-      object.add(direction)
+  @move: (direction) ->
+    types(Vector)
+    () -> @add direction
 
-  @onCollide: (object, type, cb) =>
-    types(Entity, String, Function)
-    () =>
-      collision = object.__fathom.entities.one(type, (other) -> other.collides(object))
+  @onCollide: (type, cb) ->
+    types(String, Function)
+    () ->
+      collision = @__fathom.entities.one(type, (other) => other.collides(@))
       if collision
-        cb.bind(object)(collision)
+        cb.bind(@)(collision)
 
   @onLeaveMap: (object, map, cb) =>
     () =>
