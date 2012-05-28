@@ -375,7 +375,7 @@ class Rect extends Point
 # and a callback. These callbacks are called by the `.emit` method,
 # which takes an event name.
 class Entity extends Rect
-  constructor: (@x = 0, @y = 0, @width = 20, @height = @width) ->
+  constructor: (@x = 0, @y = 0, @width = 20, @height = @width, @color="#000") ->
     types $optional($number), $optional($number), $optional($number), $optional($number)
 
     super(@x, @y, @width, @height)
@@ -405,7 +405,6 @@ class Entity extends Rect
   # provided, all callbacks attached to an event are removed.
   off: (event, callback = null) ->
     types $string, $optional($function)
-    #TODO: I don't like how this is a non-noisy failure.
     if callback
       if @__fathom.events[event]
         @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
@@ -433,41 +432,38 @@ class Entity extends Rect
   die: () ->
     @.__fathom.entities.remove @
 
-  # Returns an array of the groups this Entity is a member of. Must be
-  # implemented in a subclass.
-  groups: () ->
-    throw new Error("NotImplementedException")
+  # Returns an array of the groups this Entity is a member of.
+  groups: () -> ["renderable", "updateable"]
 
-  # Renders the Entity. Must be implemented in a subclass if it has group
-  # "renderable".
+  # Renders the Entity.
   render: (context) ->
-    throw new Error("NotImplementedException")
+    context.fillStyle = @color
+    context.fillRect @x, @y, @width, @height
 
   # Returns true if this collides with other, else false.
   collides: (other) ->
     $("Entity")
     @.__fathom.uid != other.__fathom.uid and @touchingRect other
 
-  # Updates the Entity. Must be implemented in a subclass if it has group
-  # "updateable".
+  # Updates the Entity.
   update: () ->
-    throw new Error("NotImplementedException")
 
   # Returns the depth at which the Entity will be rendered (like Z-Ordering).
   # Can be reimplemented in a subclass.
-  depth: () ->
-    0
+  depth: () -> 0
 
 class Tile extends Rect
   constructor: (@x, @y, @width, @type) ->
     super(@x, @y, @width)
     types $number, $number, $number, $number
 
-  render: (context, dx, dy) ->
     if @type == 0
-      context.fillStyle = "#f00"
+      @color = new Color().randomizeRed(150, 255).toString()
     else if @type == 1
-      context.fillStyle = "#ff0"
+      @color = "#ff0"
+
+  render: (context, dx, dy) ->
+    context.fillStyle = @color
 
     context.fillRect @x + dx, @y + dy, @width, @height
 
