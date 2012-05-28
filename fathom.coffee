@@ -529,7 +529,7 @@ loadImage = (loc, callback) ->
 class Map extends Entity
   constructor: (@widthInTiles, @heightInTiles, @tileSize) ->
     types(Number, Number, Number)
-    super 0, 0, @widthInTiles * @tileSize, @heightInTile * @tileSizes
+    super 0, 0, @widthInTiles * @tileSize, @heightInTiles * @tileSize
 
     @tiles = ((null for b in [0...@heightInTiles]) for a in [0...@widthInTiles])
     @data = undefined
