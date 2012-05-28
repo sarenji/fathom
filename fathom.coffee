@@ -195,11 +195,15 @@ class BasicHooks
       object.vy += v.y
 
       object.x += object.vx
+      object.y += object.vy
+
+  @resolveCollisions: (object) =>
+    types(Entity)
+    () =>
       if object.__fathom.entities.any((other) => other.collides(object))
         object.x -= object.vx
         object.vx = 0
 
-      object.y += object.vy
       if object.__fathom.entities.any((other) => other.collides(object))
         object.y -= object.vy
         object.vy = 0
@@ -226,9 +230,9 @@ class BasicHooks
   @onCollide: (object, type, cb) =>
     types(Entity, String, Function)
     () =>
-      collisions = object.__fathom.entities.one(type, (other) -> other.collides(object))
-      if collisions
-        cb(collisions)
+      collision = object.__fathom.entities.one(type, (other) -> other.collides(object))
+      if collision
+        cb(collision)
 
   @onLeaveMap: (object, map, cb) =>
     () =>
@@ -376,7 +380,7 @@ class Rect extends Point
 # which takes an event name.
 class Entity extends Rect
   constructor: (@x = 0, @y = 0, @width = 20, @height = @width, @color="#000") ->
-    types(Optional(Number), Optional(Number), Optional(Number), Optional(Number))
+    types(Optional(Number), Optional(Number), Optional(Number), Optional(Number), Optional(String))
 
     super(@x, @y, @width, @height)
 
