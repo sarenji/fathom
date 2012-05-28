@@ -27,6 +27,17 @@ class Util
   @epsilonEq = (a, b, threshold) ->
     Math.abs(a - b) < threshold
 
+  @randRange = (low, high) -> low + Math.floor(Math.random() * (high - low))
+
+class Color
+  constructor: (@r=0, @g=0, @b=0) ->
+
+  toString: () -> "##{@r.toString(16)[0]}#{@g.toString(16)[0]}#{@b.toString(16)[0]}"
+
+  randomizeRed  : (low=0, high=255) -> @r = Util.randRange(low, high); @
+  randomizeGreen: (low=0, high=255) -> @g = Util.randRange(low, high); @
+  randomizeBlue : (low=0, high=255) -> @b = Util.randRange(low, high); @
+
 class Point
   constructor: (@x=0, @y=0) ->
     types $optional($number), $optional($number)
@@ -90,6 +101,12 @@ class Vector
     @y *= n
     this
 
+  divide: (n) ->
+    types $number
+    @x /= n
+    @y /= n
+    this
+
   add: (v) ->
     types $("Vector")
     @x += v.x
@@ -134,8 +151,8 @@ class Key
     @keysDown = (false for x in [0..255])
 
     if addListeners
-      document.onkeydown = (e) => @keysDown[@getCode e] = true; e.preventDefault()
-      document.onkeyup = (e) => @keysDown[@getCode e] = false; e.preventDefault()
+      document.onkeydown = (e) => @keysDown[@getCode e] = true; if (@getCode e) in [@Left, @Up, @Right, @Down] then e.preventDefault()
+      document.onkeyup = (e) => @keysDown[@getCode e] = false; if (@getCode e) in [@Left, @Up, @Right, @Down] then e.preventDefault()
 
   @isDown: (key) ->
     types $number
@@ -159,10 +176,14 @@ class Key
 # have a vx and a vy.
 class BasicHooks
   #TODO: These function should be called with this bound to the caller.
-
   @stickTo: (sticker, object, dx=0, dy=0) ->
     () ->
       sticker.setPosition(object.clone().add(new Vector(dx, dy)))
+
+  # Eases `slider` to the location of `object`
+  @slideTo: (slider, object, speed=20) ->
+    () ->
+      slider.add(object.subtract(slider).divide(speed))
 
   # TODO: More customization.
   # TODO: Nice accelerating controls too, perhaps.
@@ -209,9 +230,9 @@ class BasicHooks
       if collisions
         cb(collisions)
 
-  @onLeaveScreen: (object, screenWidth, screenHeight, cb) =>
+  @onLeaveMap: (object, map, cb) =>
     () =>
-      if object.x <= 0 or object.y <= 0 or object.x >= screenWidth or object.y >= screenHeight
+      if object.x <= 0 or object.y <= 0 or object.x >= map.width or object.y >= map.height
         cb.bind(object)()
 
   @platformerLike: (speed, object) =>
@@ -354,7 +375,7 @@ class Rect extends Point
 # and a callback. These callbacks are called by the `.emit` method,
 # which takes an event name.
 class Entity extends Rect
-  constructor: (@x = 0, @y = 0, @width = 20, @height = @width) ->
+  constructor: (@x = 0, @y = 0, @width = 20, @height = @width, @color="#000") ->
     types $optional($number), $optional($number), $optional($number), $optional($number)
 
     super(@x, @y, @width, @height)
@@ -384,7 +405,6 @@ class Entity extends Rect
   # provided, all callbacks attached to an event are removed.
   off: (event, callback = null) ->
     types $string, $optional($function)
-    #TODO: I don't like how this is a non-noisy failure.
     if callback
       if @__fathom.events[event]
         @__fathom.events[event] = (hook for hook in @__fathom.events[event] when hook isnt callback)
@@ -412,43 +432,40 @@ class Entity extends Rect
   die: () ->
     @.__fathom.entities.remove @
 
-  # Returns an array of the groups this Entity is a member of. Must be
-  # implemented in a subclass.
-  groups: () ->
-    throw new Error("NotImplementedException")
+  # Returns an array of the groups this Entity is a member of.
+  groups: () -> ["renderable", "updateable"]
 
-  # Renders the Entity. Must be implemented in a subclass if it has group
-  # "renderable".
+  # Renders the Entity.
   render: (context) ->
-    throw new Error("NotImplementedException")
+    context.fillStyle = @color
+    context.fillRect @x, @y, @width, @height
 
   # Returns true if this collides with other, else false.
   collides: (other) ->
     $("Entity")
     @.__fathom.uid != other.__fathom.uid and @touchingRect other
 
-  # Updates the Entity. Must be implemented in a subclass if it has group
-  # "updateable".
+  # Updates the Entity.
   update: () ->
-    throw new Error("NotImplementedException")
 
   # Returns the depth at which the Entity will be rendered (like Z-Ordering).
   # Can be reimplemented in a subclass.
-  depth: () ->
-    0
+  depth: () -> 0
 
 class Tile extends Rect
   constructor: (@x, @y, @width, @type) ->
     super(@x, @y, @width)
     types $number, $number, $number, $number
 
-  render: (context) ->
     if @type == 0
-      context.fillStyle = "#f00"
+      @color = new Color().randomizeRed(150, 255).toString()
     else if @type == 1
-      context.fillStyle = "#ff0"
+      @color = "#ff0"
 
-    context.fillRect @x, @y, @width, @height
+  render: (context, dx, dy) ->
+    context.fillStyle = @color
+
+    context.fillRect @x + dx, @y + dy, @width, @height
 
 
 # Generic health bar
@@ -487,7 +504,6 @@ class Bar extends Entity
 class FollowBar extends Bar
   constructor: (@follow, rest...) ->
     super(rest...)
-
     @on "pre-update", Fathom.BasicHooks.stickTo(@, @follow, 0, -10)
 
 class Pixel
@@ -513,26 +529,26 @@ loadImage = (loc, callback) ->
   img.src = loc
 
 class Map extends Entity
-  constructor: (@width, @height, @size) ->
+  constructor: (@widthInTiles, @heightInTiles, @tileSize) ->
     types $number, $number, $number
-    super 0, 0, @size, @size
+    super 0, 0, @widthInTiles * @tileSize, @heightInTile * @tileSizes
 
-    @tiles = ((null for b in [0...height]) for a in [0...width])
+    @tiles = ((null for b in [0...@heightInTiles]) for a in [0...@widthInTiles])
     @data = undefined
     @corner = new Point(0, 0)
 
   setTile: (x, y, type) =>
     types $number, $number, $number
-    @tiles[x][y] = new Tile(x * @width, y * @height, @width, type)
+    @tiles[x][y] = new Tile(x * @tileSize, y * @tileSize, @tileSize, type)
 
   # Set the top right corner of the visible map.
   # TODO: This has a bad name. TODO and now it's even worse because it's a delta.
   setCorner: (diff) ->
     types $("Vector")
-    @corner.add(diff.multiply(@width))
+    @corner.add(diff.multiply(@widthInTiles))
 
-    for x in [0... + @width]
-      for y in [0... + @height]
+    for x in [0... @widthInTiles]
+      for y in [0... @heightInTiles]
         if @data[@corner.x + x][@corner.y + y].eq(new Pixel(0, 0, 0, 255)) #TODO. Too specific.
           val = 1
         else
@@ -542,32 +558,36 @@ class Map extends Entity
 
   fromImage: (loc, corner, callback) ->
     types $string, $("Vector"), $function
-    if @data
-      @setCorner(corner)
-      return
+    ready =>
+      if @data
+        @setCorner(corner)
+        return
 
-    loadImage loc, (data) =>
-      @data = data
-      @setCorner(corner)
-      callback()
+      loadImage loc, (data) =>
+        @data = data
+        @setCorner(corner)
+        callback()
 
   groups: ->
     ["renderable", "wall", "map"]
 
   collides: (other) ->
     types $('Rect')
-    #TODO insanely inefficient.
-    for x in [0...@width]
-      for y in [0...@height]
-        if @tiles[x][y].type == 1 and @tiles[x][y].touchingRect other
-          return true
+    xStart = Math.floor(other.x/@tileSize)
+    yStart = Math.floor(other.y/@tileSize)
+
+    for x in [xStart..xStart+2]
+      for y in [yStart..yStart+2]
+        if 0 <= x < @widthInTiles and 0 <= y < @heightInTiles
+          if @tiles[x][y].type == 1 and @tiles[x][y].touchingRect other
+            return true
 
     return false
 
   render: (context) ->
-    for x in [0...@width]
-      for y in [0...@height]
-        @tiles[x][y].render context
+    for tileX in [0...@widthInTiles]
+      for tileY in [0...@heightInTiles]
+        @tiles[tileX][tileY].render context, @x, @y
 
 class StaticImage extends Entity
   constructor: (source, destination) ->
@@ -593,6 +613,37 @@ class Text extends Entity
     context.fillText @text, @x, @y
   depth: -> 2
   collides: -> false
+
+class Camera extends Entity
+  constructor: (args...) ->
+    @dontAdjust = true
+    super(args...)
+
+  move: (x, y) ->
+    @x = x
+    @y = y
+
+  groups: -> ["camera"]
+  collides: -> false
+
+  render: (entities, context, fn) ->
+    for e in entities.get() when not e.dontAdjust
+      e.x -= @x
+      e.y -= @y
+
+    entities.render context
+
+    for e in entities.get() when not e.dontAdjust
+      e.x += @x
+      e.y += @y
+
+class FollowCam extends Camera
+  constructor: (@follow, rest...) -> super(rest...)
+  update: -> Fathom.BasicHooks.slideTo(@, new Point(@follow.x - @width, @follow.y - @height))()
+  groups: -> ["camera", "updateable"]
+  snap: ->
+    @x = @follow.x - @width
+    @y = @follow.y - @height
 
 class TextBox extends Text
   constructor: (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
@@ -654,9 +705,11 @@ getFPS.fps = 0
 
 initialize = (gameLoop, canvasID) ->
   types $function, $string
+  window_size = 500 #TODO
+
   ready () ->
     canv = document.createElement "canvas"
-    canv.width = canv.height = 500
+    canv.width = canv.height = window_size
     temp_context = canv.getContext('2d')
 
     Key.start()
@@ -664,10 +717,22 @@ initialize = (gameLoop, canvasID) ->
     canv = document.getElementById canvasID
     context = canv.getContext('2d')
 
+    cam = entities.get "camera"
+    if cam.length > 1
+      throw new Error("More than one camera.") #TODO: Camera#enable, Camera#disable
+    if cam.length == 1
+      cam = cam[0]
+
+
     wrappedLoop = () ->
       gameLoop context
       entities.update entities
-      entities.render context
+      context.fillStyle = "#fff"
+      context.fillRect 0, 0, 500, 500
+      if cam
+        cam.render entities, context
+      else
+        entities.render context
 
     fixedInterval wrappedLoop
 
@@ -678,6 +743,9 @@ exports.Fathom =
   Key        : Key
   Entity     : Entity
   Entities   : Entities
+  Color      : Color
+  Camera     : Camera
+  FollowCam  : FollowCam
   BasicHooks : BasicHooks
   Text       : Text
   Rect       : Rect
@@ -689,3 +757,4 @@ exports.Fathom =
   Vector     : Vector
   initialize : initialize
   getFPS     : getFPS
+
