@@ -102,7 +102,7 @@ class Vector
     this
 
   divide: (n) ->
-    types $number
+    types Number
     @x /= n
     @y /= n
     this
@@ -442,7 +442,7 @@ class Entity extends Rect
 
   # Returns true if this collides with other, else false.
   collides: (other) ->
-    $("Entity")
+    types Entity
     @.__fathom.uid != other.__fathom.uid and @touchingRect other
 
   # Updates the Entity.
