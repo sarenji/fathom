@@ -230,9 +230,9 @@ class BasicHooks
       if collisions
         cb(collisions)
 
-  @onLeaveScreen: (object, screenWidth, screenHeight, cb) =>
+  @onLeaveMap: (object, map, cb) =>
     () =>
-      if object.x <= 0 or object.y <= 0 or object.x >= screenWidth or object.y >= screenHeight
+      if object.x <= 0 or object.y <= 0 or object.x >= map.width or object.y >= map.height
         cb.bind(object)()
 
   @platformerLike: (speed, object) =>
