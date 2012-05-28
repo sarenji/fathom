@@ -176,52 +176,46 @@ class Key
 # rethink this. What it means until it does is that the controlled object must
 # have a vx and a vy.
 class BasicHooks
-  #TODO: These function should be called with this bound to the caller.
-  @stickTo: (sticker, object, dx=0, dy=0) ->
-    () ->
-      sticker.setPosition(object.clone().add(new Vector(dx, dy)))
+  @stickTo: (stuckTo, dx=0, dy=0) ->
+    () -> @setPosition(stuckTo.clone().add(new Vector(dx, dy)))
 
-  # Eases `slider` to the location of `object`
-  @slideTo: (slider, object, speed=20) ->
-    () ->
-      slider.add(object.subtract(slider).divide(speed))
+  @slideTo: (slideTo, speed=20) ->
+    () -> @add(slideTo.subtract(@).divide(speed))
 
   # TODO: More customization.
   # TODO: Nice accelerating controls too, perhaps.
-  @rpgLike: (speed, object) =>
-    types(Number, Entity)
-    () =>
+  @rpgLike: (speed) ->
+    types(Number)
+    () ->
       v = Util.movementVector().multiply(speed)
-      object.vx += v.x
-      object.vy += v.y
+      @vx += v.x
+      @vy += v.y
 
-      object.x += object.vx
-      object.y += object.vy
+      @x += @vx
+      @y += @vy
 
-  @resolveCollisions: (object) =>
-    types(Entity)
-    () =>
-      if object.__fathom.entities.any((other) => other.collides(object))
-        object.x -= object.vx
-        object.vx = 0
+  @resolveCollisions: () ->
+    () ->
+      if @__fathom.entities.any((other) => other.collides @)
+        @x -= @vx
+        @vx = 0
 
-      if object.__fathom.entities.any((other) => other.collides(object))
-        object.y -= object.vy
-        object.vy = 0
+      if @__fathom.entities.any((other) => other.collides @)
+        @y -= @vy
+        @vy = 0
 
 
   # TODO: Pass in cutoff and decel.
-  @decel: (object) =>
-    types(Object)
+  @decel: () ->
     cutoff = .5
     decel = 2
 
-    () =>
-      object.vx = 0 if Math.abs(object.vx) < cutoff
-      object.vy = 0 if Math.abs(object.vy) < cutoff
+    () ->
+      this.vx = 0 if Math.abs(this.vx) < cutoff
+      this.vy = 0 if Math.abs(this.vy) < cutoff
 
-      object.vx /= decel
-      object.vy /= decel
+      this.vx /= decel
+      this.vy /= decel
 
   @move: (object, direction) =>
     types(Entity, Vector)
@@ -233,7 +227,7 @@ class BasicHooks
     () =>
       collision = object.__fathom.entities.one(type, (other) -> other.collides(object))
       if collision
-        cb(collision)
+        cb.bind(object)(collision)
 
   @onLeaveMap: (object, map, cb) =>
     () =>
@@ -429,7 +423,7 @@ class Entity extends Rect
   # not have the event, the function fails silently.
   emit: (event, args...) ->
     if event of @__fathom.events
-      hook.call(this) for hook in @__fathom.events[event]
+      hook.bind(@).call(this) for hook in @__fathom.events[event]
 
     # Return the Entity object for easy chainability.
     this
@@ -509,7 +503,7 @@ class Bar extends Entity
 class FollowBar extends Bar
   constructor: (@follow, rest...) ->
     super(rest...)
-    @on "pre-update", Fathom.BasicHooks.stickTo(@, @follow, 0, -10)
+    @on "pre-update", Fathom.BasicHooks.stickTo(@follow, 0, -10)
 
 class Pixel
   constructor: (@r, @g, @b, @a) -> types(Number, Number, Number, Number)
@@ -644,7 +638,7 @@ class Camera extends Entity
 
 class FollowCam extends Camera
   constructor: (@follow, rest...) -> super(rest...)
-  update: -> Fathom.BasicHooks.slideTo(@, new Point(@follow.x - @width / 2, @follow.y - @height / 2))()
+  update: -> Fathom.BasicHooks.slideTo(new Point(@follow.x - @width / 2, @follow.y - @height / 2)).bind(@)()
   groups: -> ["camera", "updateable"]
   snap: ->
     @x = @follow.x - @width / 2
