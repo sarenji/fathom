@@ -737,8 +737,7 @@ initialize = (gameLoop, canvasID) ->
     fixedInterval wrappedLoop
 
 # Export necessary things outside of closure.
-exports = (module?.exports or this)
-exports.Fathom =
+@Fathom =
   Util       : Util
   Key        : Key
   Entity     : Entity
