@@ -643,11 +643,11 @@ class Camera extends Entity
 
 class FollowCam extends Camera
   constructor: (@follow, rest...) -> super(rest...)
-  update: -> Fathom.BasicHooks.slideTo(@, new Point(@follow.x - 200, @follow.y - 200))()
+  update: -> Fathom.BasicHooks.slideTo(@, new Point(@follow.x - @width, @follow.y - @height))()
   groups: -> ["camera", "updateable"]
   snap: ->
-    @x = @follow.x - 200
-    @y = @follow.y - 200
+    @x = @follow.x - @width
+    @y = @follow.y - @height
 
 class TextBox extends Text
   constructor: (text, x=0, y=0, @width=100, @height=-1, opts={}) ->
