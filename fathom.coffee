@@ -151,8 +151,8 @@ class Key
     @keysDown = (false for x in [0..255])
 
     if addListeners
-      document.onkeydown = (e) => @keysDown[@getCode e] = true; e.preventDefault()
-      document.onkeyup = (e) => @keysDown[@getCode e] = false; e.preventDefault()
+      document.onkeydown = (e) => @keysDown[@getCode e] = true; if e in [@Left, @Up, @Right, @Down] then e.preventDefault()
+      document.onkeyup = (e) => @keysDown[@getCode e] = false; if e in [@Left, @Up, @Right, @Down] then e.preventDefault()
 
   @isDown: (key) ->
     types $number
