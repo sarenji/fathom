@@ -38,6 +38,9 @@ describe 'Other simple types', ->
   it "accepts array types", ->
     (-> arraytaker([])).should.not.throw()
 
+  it "accepts array types with more than one element", ->
+    (-> arraytaker([1, "c"])).should.not.throw()
+
   it "accepts object types", ->
     (-> objtaker({})).should.not.throw()
 
