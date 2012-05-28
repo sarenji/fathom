@@ -27,6 +27,8 @@ class Util
   @epsilonEq = (a, b, threshold) ->
     Math.abs(a - b) < threshold
 
+  @randRange = (low, high) -> low + Math.floor(Math.random() * (high - low))
+
 class Point
   constructor: (@x=0, @y=0) ->
     types $optional($number), $optional($number)
