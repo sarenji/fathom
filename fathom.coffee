@@ -39,6 +39,9 @@ class Color
   randomizeGreen: (low=0, high=255) -> @g = Util.randRange(low, high); @
   randomizeBlue : (low=0, high=255) -> @b = Util.randRange(low, high); @
 
+class Tick
+  @ticks = 0
+
 class Point
   constructor: (@x=0, @y=0) ->
     types(Optional(Number), Optional(Number))
@@ -724,6 +727,7 @@ initialize = (gameLoop, canvasID) ->
 
     wrappedLoop = () ->
       gameLoop context
+      Tick.ticks += 1
       entities.update entities
       context.fillStyle = "#fff"
       context.fillRect 0, 0, 500, 500
@@ -754,4 +758,5 @@ initialize = (gameLoop, canvasID) ->
   Vector     : Vector
   initialize : initialize
   getFPS     : getFPS
+  Tick       : Tick
 
