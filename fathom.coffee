@@ -681,18 +681,28 @@ class TextBox extends Text
     for phrase, i in @phrases
       context.fillText phrase, @x, @y + @size * i
 
+canvas = null # The actual canvas element.
+context = null # Graphics context for the game.
+temp_context = null # Context for temporary stuff i.e. reading pixel data (invisible).
+
 # To start Fathom, document.body must exist.
 ready = (callback) ->
   types(Function)
-  if document.body then callback() else setTimeout (-> ready callback), 250
+  if document.body
+    if not temp_context?
+      #TODO. Move this into initializaion function.
+      canv = document.createElement "canvas"
+      canv.width = canv.height = 500 #TODO constant
+      temp_context = canv.getContext('2d')
+
+    callback()
+  else
+    setTimeout (-> ready callback), 250
 
 # TODO: This implementation is not complete.
 fixedInterval = (fn, fps=24) ->
   types(Function, Optional(Number))
   setInterval fn, 1000/fps
-
-context = null # Graphics context for the game.
-temp_context = null # Context for temporary stuff i.e. reading pixel data (invisible).
 
 # Returns an estimate of the FPS (strictly: the number of times this function
 # has been called per second). Will return null the first time.
@@ -708,26 +718,26 @@ getFPS.fpsFilter = 20
 getFPS.lastUpdate = +new Date()
 getFPS.fps = 0
 
+getCamera = () ->
+  cam = entities.get "camera"
+  if cam.length > 1
+    throw new Error("More than one camera.") #TODO: Camera#enable, Camera#disable
+  if cam.length == 1
+    cam = cam[0]
+
+  cam
+
 initialize = (gameLoop, canvasID) ->
   types(Function, String)
   window_size = 500 #TODO
 
   ready () ->
-    canv = document.createElement "canvas"
-    canv.width = canv.height = window_size
-    temp_context = canv.getContext('2d')
-
     Key.start()
 
-    canv = document.getElementById canvasID
-    context = canv.getContext('2d')
+    canvas = document.getElementById canvasID
+    context = canvas.getContext('2d')
 
-    cam = entities.get "camera"
-    if cam.length > 1
-      throw new Error("More than one camera.") #TODO: Camera#enable, Camera#disable
-    if cam.length == 1
-      cam = cam[0]
-
+    cam = getCamera()
 
     wrappedLoop = () ->
       gameLoop context
@@ -742,6 +752,17 @@ initialize = (gameLoop, canvasID) ->
 
     fixedInterval wrappedLoop
 
+#TODO: Better name.
+mousePick = (x, y) ->
+  cam = entities.one "camera"
+  canv_offset = $(canvas).parent().offset();
+
+  x += cam.x - canv_offset.left
+  y += cam.y - canv_offset.top
+
+  mousePos = new Point(x, y)
+  underMouse = entities.get "!camera", "!map", (o) -> o.touchingPoint mousePos
+
 # Export necessary things outside of closure.
 @Fathom =
   Util       : Util
@@ -751,6 +772,7 @@ initialize = (gameLoop, canvasID) ->
   Color      : Color
   Camera     : Camera
   FollowCam  : FollowCam
+  mousePick  : mousePick
   BasicHooks : BasicHooks
   Text       : Text
   Rect       : Rect
