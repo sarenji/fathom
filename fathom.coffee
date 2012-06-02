@@ -287,8 +287,12 @@ class Entities
       for entity in remainingEntities
         switch typeof item
           when "string"
-            if item in entity.groups()
-              pass.push entity
+            if item[0] == "!"
+              if item[1..] not in entity.groups()
+                pass.push entity
+            else
+              if item in entity.groups()
+                pass.push entity
           when "function"
             if item entity
               pass.push entity
