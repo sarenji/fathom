@@ -241,12 +241,15 @@ class BasicHooks
     types(Number, Entity, Entities)
     object.vx += (Key.isDown(Key.D) - Key.isDown(Key.A)) * speed
     object.vy += 5
+    
+    object.x += object.vx
+    object.y += object.vy
 
     # Need to check if we're on the ground before we jump
     if Key.isDown(Key.W)
       onGround = object.__fathom.entities.any (other) -> other.collides(this)
       if onGround
-        object.vy -= 50
+        object.vy += 50
 
 
 assert = (fn) ->
