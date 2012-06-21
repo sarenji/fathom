@@ -199,6 +199,7 @@ class BasicHooks
 
   @resolveCollisions: () ->
     () ->
+      # TODO: This does not work in all cases.
       if @__fathom.entities.any((other) => other.collides @)
         @x -= @vx
         @vx = 0
